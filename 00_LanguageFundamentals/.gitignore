@@ -1,0 +1,34 @@
+Videos
+.*.sw*
+*.pdf
+*.exe
+*.test
+*.prof
+*.dSYM
+*.so
+*.o
+*.log
+*.db
+tags
+
+# Directory-based project format:
+.idea/
+.idea/workspace.xml
+**/.idea/workspace.xml
+
+#other
+node_modules/
+bower_components/
+.tmp
+.sass-cache
+*.ogg
+*.mp3
+*.mp4
+
+# security / ssl
+*.pem
+*.xxjson
+
+# Folders
+_obj
+_test
