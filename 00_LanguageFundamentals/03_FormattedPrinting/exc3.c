@@ -34,6 +34,18 @@ void example1(){
  	printf("This one reads percentage sign %%\n ");
  }
 
+
+void example4(){
+	printf(":%s:\n", "Hello, world!");
+	printf(":%15s:\n","Hello, world!");
+	printf(":%.10s:\n","Hello, world!");
+	printf(":%-10s:\n","Hello, world!");
+	printf(":%-15s:\n","Hello, world!");
+	printf(":%.15s:\n","Hello, world!");
+	printf(":%15.10s:\n","Hello, world!");
+	printf(":%-15.10s:\n","Hello, world!");	
+}
+
 int main(){
 
 	example1();
@@ -44,5 +56,9 @@ int main(){
 
 	example3();
 	printf("\n");
+
+	example4();
+	printf("\n");
+
 	return 0;
 }
