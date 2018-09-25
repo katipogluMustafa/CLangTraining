@@ -46,19 +46,19 @@ void example4(){
 	printf(":%-15.10s:\n","Hello, world!");	
 }
 
-int main(){
+int main(int argc, char *argv[]){
 
 	example1();
-	printf("\n");
+	printf("\n\n");
 
 	example2();
-	printf("\n");
+	printf("\n\n");
 
 	example3();
-	printf("\n");
+	printf("\n\n");
 
 	example4();
-	printf("\n");
+	printf("\n\n");
 
 	return 0;
 }
