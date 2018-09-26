@@ -16,18 +16,20 @@
 ```bash
 	
 	$ CFLAGS="-Wall -g" make exc4 # by giving -g parameter we say compile with debugging symbols.
-
+	# -g command inside CFLAGS provides the line numbers, where things happens
+	
 	$ gdb ./exc4 # open debugging tool for exc4
-
 	(gdb) run 	 # start the exc4
 	(dgb) bt  	 # see back trace
 
 	(gdb) break main # Make a break point so that it breaks before main starts.
 	(gdb) run # run again, as you can see breaks when reach main
-	# as you can see from the output of run command, you see the debugger what line on the code.
-	# -g parameter that we gave when we compile exc4 gives the ability to show what line the debugger is on.
-	(gdb) list
-	(gdb) step # run the following line
+	(gdb) list # List out the next ten source lines. Add a - to list the previous ten lines.
+	(gdb) step # Next line, but step into function calls. Shorthand is s.
+	(gdb) continue # continue running the program.
+
+
+	$ gdb --batch --ex r --ex bt --ex q --args # Use when the program crashes.
 ```
 
 ### GDB TRICKS

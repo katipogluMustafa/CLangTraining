@@ -8,7 +8,7 @@ struct student {
 
 int main(){
 
-	printf("Debugging\n\n")
+	printf("Debugging\n\n");
 
 	printf("Enter Information\n");
 
