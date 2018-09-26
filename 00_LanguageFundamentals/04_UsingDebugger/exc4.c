@@ -25,6 +25,8 @@ int main(){
 	printf("Enter marks: ");
 	scanf("%f", &s.marks);
 
+	int age = 15;
+
 	printf("\n");
 
 	printf("Displaying the Information:\n\n");
@@ -34,6 +36,6 @@ int main(){
 
 	printf("Roll Number: %d\n", s.roll);
 	printf("Marks: %.1f\n", s.marks);	
-
+	printf("Age %d",age);
 	return 0;
 }
