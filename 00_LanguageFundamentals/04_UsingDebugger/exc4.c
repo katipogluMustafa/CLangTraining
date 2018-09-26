@@ -8,6 +8,8 @@ struct student {
 
 int main(){
 
+	printf("Debugging\n\n")
+
 	printf("Enter Information\n");
 
 	printf("Name: ");

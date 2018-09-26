@@ -10,7 +10,27 @@
 	* Debugger observes your program's executing and let you make stops and do things.  
 	* lldb and GDB has different set of commands.
 
-## GDB TRICKS
+
+## GDB	
+
+```bash
+	
+	$ CFLAGS="-Wall -g" make exc4 # by giving -g parameter we say compile with debugging symbols.
+
+	$ gdb ./exc4 # open debugging tool for exc4
+
+	(gdb) run 	 # start the exc4
+	(dgb) bt  	 # see back trace
+
+	(gdb) break main # Make a break point so that it breaks before main starts.
+	(gdb) run # run again, as you can see breaks when reach main
+	# as you can see from the output of run command, you see the debugger what line on the code.
+	# -g parameter that we gave when we compile exc4 gives the ability to show what line the debugger is on.
+	(gdb) list
+	(gdb) step # run the following line
+```
+
+### GDB TRICKS
 Here’s a list of simple tricks you can do with GNU Debugger (GDB):
 
 * gdb --args Normally, gdb takes arguments you give it and assumes they are for itself. Using --args passes them to the program.
@@ -19,7 +39,7 @@ Here’s a list of simple tricks you can do with GNU Debugger (GDB):
 
 * gdb --batch --ex r --ex bt --ex q --args Run the program so that if it bombs, you get a backtrace.
 
-## GDB QUICK REFERENCE
+### GDB QUICK REFERENCE
 
 
 * **run [args]** Start your program with [args].
@@ -68,7 +88,9 @@ Here’s a list of simple tricks you can do with GNU Debugger (GDB):
 * **list** List out the next ten source lines. Add a - to list the previous ten lines.
 
 
-## LLDB QUICK REFERENCE
+## LLDB
+
+### LLDB QUICK REFERENCE
 
 
 In OS X, you no longer have GDB and instead must use a similar program called LLDB Debugger (LLDB). The commands are almost the same, but here’s a quick reference for LLDB:
