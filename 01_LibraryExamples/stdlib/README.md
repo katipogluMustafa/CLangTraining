@@ -1,6 +1,41 @@
 # stdlib
 
 
+### exit()
+
+Terminates the calling process immediately. 
+
+Any open file descriptors belonging to the process are closed and any children of the process are inherited by process 1, init, and the process parent is sent a SIGCHLD signal.
+
+Syntax:
+```c
+
+void exit(int status)
+
+
+```
+
+Example:
+
+```c
+
+#include <stdio.h>
+#include <stdlib.h>
+
+int main () {
+   printf("Start of the program....\n");
+   
+   printf("Exiting the program....\n");
+   exit(0);
+
+   printf("End of the program....\n");
+
+   return(0);
+}
+
+```
+
+
 ## Dynamic Memory Allocation Functions in standard library
 
 * malloc() --> Allocates requested size of bytes and returns a pointer first byte of allocated space
