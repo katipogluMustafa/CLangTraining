@@ -6,10 +6,6 @@ service groups of mixed data, you need to use an aggregate type called a
 structure.
 
 
-
-
-## Struct Declarations ~ Initializations
-
 * Declare a structure template called vitalstat; 
 
 ```c
@@ -72,6 +68,30 @@ typedef struct {
 VITALSTAT vs;
 
 vs = {"George Smith", "0023451526", "3", "5", "1946"};
+
+/* Reference the structe members */
+
+// Method 1
+
+vs.vs_year = 2018;
+vs.vs_day = 9;
+vs.vs_month = 10;
+
+if(vs.vs_month > 12 || vs.vs_day > 31){
+	printf("Illegal Date!\n");
+}
+
+// Method 2
+
+VITALSTAT *pvs = &vs;
+
+if(pvs->vs_month > 12 || pvs->vs_day > 31){
+	printf("Illegal Date!\n");
+}
+
+pvs->vs_month 
+//is equal to
+(*pvs).vs_month
 
 ```
 
