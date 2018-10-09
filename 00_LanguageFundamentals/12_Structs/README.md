@@ -95,4 +95,125 @@ pvs->vs_month
 
 ```
 
+## Arrays Of Structures
+
+```c
+
+VITALSTAT vsa[10];
+
+```
+
+
+```c
+
+#include "v_stat.h" // contains declaration of VITALSTAT
+
+int agecount(VITALSTAT vsa[], int size, int low_age, int high_age, int current_year){
+
+	int i, age, count = 0;
+
+	for(i = 0; i < size; ++vsa, ++i){
+		age = current_year - vsa->vs_year;
+
+		if(age >= low_age  && age <= high_age){
+			count++;
+		}
+	}
+	return count;
+}
+
+
+```
+
+* Changing the original parameters can be dangerous sometimes and should be avoided when making complex software.
+
+```c
+#include "v_stat.h"
+
+int agecount(VITALSTAT vsa[], int size, int low_age, int current_year){
+
+	int age, count = 0;
+
+	VITALSTAT *p, *p_last = &vsa[size];
+
+
+	for(p = vsa; p <= p_last; ++p){
+		age = current_year - p->vs_year;
+
+		if(age >= low_age && age <= high_age){
+			count++;
+		}
+	}
+
+	return count;
+}
+
+
+
+```
+
+## Nested Structure
+
+* When one of the fields of a structure is itself a structure, it is called a
+nested structure.
+
+```c
+#include <stdio.h>
+
+typedef struct{
+
+	char vs_name[19], vs_ssum[11];
+	
+	struct{
+		short vs_day;
+		short vs_month;
+		short vs_year;
+	} vs_birth_date;
+
+} VITALSTAT;
+
+VITALSTAT vs;
+
+printf(vs.vs_birth_date.vs_year);
+
+```
+
+```c
+#include <stdio.h>
+
+typedef struct{
+	char  day;
+	char  month;
+	short year;
+}DATE;
+
+typedef struct {
+	
+	char vs_name[19], vs_ssum[11];
+	
+	DATE vs_birth_date;
+
+} VITALSTAT;
+
+VITALSTAT vsa[1000];
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
