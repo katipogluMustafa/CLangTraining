@@ -6,6 +6,8 @@ int main(int argc, char* argv[]){
 	char str[4] = "mark";
 	int i;
 
+	// strlen() shows length of the string without trailing null.
+
 	for(i = 0; i < strlen(str); i++){
 			printf("%c\n", str[i]);
 			if(str[i] == '\0'){
