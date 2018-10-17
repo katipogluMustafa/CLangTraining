@@ -199,9 +199,67 @@ VITALSTAT vsa[1000];
 
 ```
 
+## Struct And Union Namespaces
+
+The ANSI Standard requires C compilers to create a separate naming
+space within each structure and union, so that two or more structures or
+unions can have components with the same name.
+
+```c
+
+struct s1{
+	int a,b;
+};
+
+struct s2{
+	float a,b;
+};
+
+```
+
+The following, for example, is legal:
+
+```c
+
+struct x {
+	int x;
+} x;
 
 
+```
 
+## Self-referencing Structures
+
+```c
+
+struct node {
+	int data1;
+	char data2;
+	struct node* link; 
+}
+
+
+```
+
+* As this example illustrates, you are permitted to declare pointers to
+structures that have not yet been declared. This feature enables you to create
+self-referential structures and also to create mutually referential structures
+and unions
+
+```c
+
+struct s1 {
+	int a;
+	// forward referencing
+	struct s2 *b;
+};
+
+struct s2 {
+	int a;
+	struct s1 *b;
+}
+
+```
 
 
 
