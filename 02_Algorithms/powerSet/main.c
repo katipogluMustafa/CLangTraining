@@ -13,27 +13,25 @@ void Reverse(char *str);
 int power(int,int);
 
 int main(){
-	int i;	
+	int i,n;	
 
 	/* Take Input Set */
-	
-	int n;	
-	 
-	printf("Length of the set:");
-	scanf("%d",&n);
-	printf("\n");
-	
-	int set[n];
+		
+
+	int set[MAX_NUM_OF_DIGITS];
 	
 	printf("Please give the elements of the set\n");
+	
+	while
 	
 	for(i = 0; i < n; i++){
 		printf("%d.Element: ",i+1);
 		scanf("%d",&set[i]);
 	}
-	
+	char str[MAX_NUM_OF_DIGITS];
+
 	int upperLimit = power(2,n);
-	for(i = 0; i < upperLimit; i++){
+	for(i = 0; i < upperLimit-1; i++){
 		char str[MAX_NUM_OF_DIGITS];
 		convertToBinary(str,i); // Convert i to binary format
 		printTheSet(n,set,str);  // Print the set
@@ -47,7 +45,7 @@ void convertToBinary(char *str, int i){
 	int j;
 	
 	// Make Each Item Zero First
-	for(j = 0; i < MAX_NUM_OF_DIGITS; i++){
+	for(j = 0; j < MAX_NUM_OF_DIGITS; j++){
 		*str = 0;
 		str++;
 	}
@@ -94,9 +92,9 @@ void printTheSet(int n,int* set,char *str){
 		return;
 	}
 	
-	int temp = atoi(str); // convert str[0] to int
 	
-	printf( "%d ", temp * (*set) );	
+	
+	printf( "%d ", atoi(&str[0]) * (*set) );	
 
 	str++;
 	set++;
