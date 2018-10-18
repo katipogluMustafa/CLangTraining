@@ -1,5 +1,4 @@
 #include<stdio.h>  // only IO
-#include<math.h>   // pow()
 #include<stdlib.h> // atoi()
 #include<string.h> // strlen()
 
@@ -11,7 +10,7 @@ void convertToBinary(char *str, int i);
 void Binary(char *str, int i);
 void printTheSet(int n, int arr[],char *str);
 void Reverse(char *str);
-
+int power(int,int);
 
 int main(){
 	int i;	
@@ -33,7 +32,7 @@ int main(){
 		scanf("%d",&set[i]);
 	}
 	
-	int upperLimit = pow((double)2,(double)n);
+	int upperLimit = power(2,n);
 	for(i = 0; i < upperLimit; i++){
 		char str[MAX_NUM_OF_DIGITS];
 		convertToBinary(str,i); // Convert i to binary format
@@ -88,7 +87,7 @@ void Reverse(char *str){
 }
 
 
-void printTheSet(int n,int set[n],char *str){
+void printTheSet(int n,int* set,char *str){
 	
 	// Break the loop
 	if(*set == '\0'){
@@ -102,4 +101,12 @@ void printTheSet(int n,int set[n],char *str){
 	str++;
 	set++;
 	printTheSet( (n-1), set, str );
+}
+
+int power(int x, int y){
+	int i = x;
+	for(i = 1; i <= y; i++){
+		i *= x;
+	}
+	return x;
 }
