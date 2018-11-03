@@ -2,15 +2,16 @@
 #include <stdlib.h>
 #include <string.h>
 
-int lexicographic_sort(const char* a, const char* b) {
+// review
+int lexicographic_sort(char* a, char* b) {
     if( strcmp(a,b) == 1 ){
         return 1;
     }
     
     return 0;
 }
-
-int lexicographic_sort_reverse(const char* a, const char* b) {
+// review
+int lexicographic_sort_reverse(char* a, char* b) {
     if( strcmp(a,b) == -1 ){
         return 1;
     }
@@ -18,16 +19,19 @@ int lexicographic_sort_reverse(const char* a, const char* b) {
     return 0;
 }
 
-int sort_by_number_of_distinct_characters(const char* a, const char* b) {
+int sort_by_number_of_distinct_characters(char* a, char* b) {
     int arrayA[255] = {0};
     int arrayB[255] = {0};
     
-    char* tmpA = a, tmpB = b;
+    char* tmpA = a;
+    char* tmpB = b;
+    
     int countA = 0, countB = 0;
     
     // Calculate number of diff chars of string a
     while(*tmpA){
-        arrayA[*tmpA] = *tmpA;
+        char tmp = *tmpA;
+        arrayA[tmp] = tmp;
         *tmpA++;
     }
     int i = 255;
@@ -39,9 +43,10 @@ int sort_by_number_of_distinct_characters(const char* a, const char* b) {
         
         i--;
     }
-    // 
+ 
     while(*tmpB){
-        arrayB[*tmpB] = *tmpB;
+        char tmp = *tmpB;
+        arrayB[tmp] = tmp;
         *tmpB++;
     }
     i = 255;
@@ -61,7 +66,7 @@ int sort_by_number_of_distinct_characters(const char* a, const char* b) {
     return 0;
 }
 
-int sort_by_length(const char* a, const char* b) {
+int sort_by_length(char* a, char* b) {
     char* tmpA = a;
     char* tmpB = b;
     
@@ -79,16 +84,16 @@ int sort_by_length(const char* a, const char* b) {
     
 }
 
-void string_sort(char** arr,const int len,int (*cmp_func)(const char* a, const char* b)){
+void string_sort(char** arr,const int len,int (*cmp_func)(char* a, char* b)){
     int i,j,tmp;
     for(i = 0; i < len-1; i++){
-        for(j = i+1; j < len-1;j++){
+        for(j = 0; j < len-1-i;j++){
             tmp = cmp_func(arr[j],arr[j+1]);
             if(tmp){
                 // swap j and j+1
-                int* pointer = arr[j];
-                arr[j] = arr[j+1];
-                arr[j+1] = pointer;
+                int* pointer = (int*)arr[j];
+                arr[j] = (int*)arr[j+1];
+                arr[j+1] = (int*)pointer;
             }
         }
     }
