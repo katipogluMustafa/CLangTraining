@@ -1,0 +1,2 @@
+This is just a text to test whether fprint is properly working or not
+This is test for fputs function
