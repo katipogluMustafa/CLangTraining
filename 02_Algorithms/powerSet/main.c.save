@@ -11,8 +11,6 @@ void Binary(char *str, int i);
 void printTheSet(int n, int arr[],char *str);
 void Reverse(char *str);
 int power(int,int);
-void resetChar(char*);
-void resetInt(int*);
 
 int main(){
 	int i,n;	
@@ -21,20 +19,14 @@ int main(){
 		
 
 	int set[MAX_NUM_OF_DIGITS];
-	char str[MAX_NUM_OF_DIGITS];
-
-	// Make Each Item Zero First
-	resetChar(str);
-	resetInt(set);
 	
 	printf("Please give the elements of the set\n");
-	scanf("%d",&n);
-
+		
 	for(i = 0; i < n; i++){
 		printf("%d.Element: ",i+1);
 		scanf("%d",&set[i]);
 	}
-	
+	char str[MAX_NUM_OF_DIGITS];
 
 	int upperLimit = power(2,n);
 	for(i = 0; i < upperLimit-1; i++){
@@ -48,9 +40,16 @@ int main(){
 }
 
 void convertToBinary(char *str, int i){
+	int j;
+	
+	// Make Each Item Zero First
+	for(j = 0; j < MAX_NUM_OF_DIGITS; j++){
+		*str = 0;
+		str++;
+	}
+	
 
 	// Convert to binary
-
 	Binary(str,i); // but the output is reverse
 
 	// Reverse the string
@@ -92,6 +91,7 @@ void printTheSet(int n,int* set,char *str){
 	}
 	
 	
+	
 	printf( "%d ", atoi(&str[0]) * (*set) );	
 
 	str++;
@@ -105,18 +105,4 @@ int power(int x, int y){
 		i *= x;
 	}
 	return x;
-}
-
-void resetChar(char* dizi){
-	int i;
-	for(i = 0; i < MAX_NUM_OF_DIGITS; i++){
-		dizi[i] = 0;
-	}
-}
-void resetInt(int* dizi){
-	int i;
-	for(i = 0; i < MAX_NUM_OF_DIGITS; i++){
-		*dizi = 0;
-		dizi++;
-	}
 }

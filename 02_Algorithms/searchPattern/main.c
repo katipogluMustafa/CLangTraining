@@ -5,7 +5,7 @@
 #define SIZE 2048
 
 int searchPattern(char* in, char* patern);
-int search(char* start, char* pattern);
+
 
 int main(){
   
@@ -22,7 +22,7 @@ int main(){
   */
   fclose(fp);
   
-  char stxt[] = "up";
+  char stxt[] = "ethics";
   int position = searchPattern(read_el, stxt );
   
   if(position != -1){
@@ -39,40 +39,27 @@ int main(){
 }
 
 int searchPattern(char* in, char* pattern){
-  
-  int count = 0;
-  while(*in){
-  
-  // if the first char of the pattern is found 
-  if(*in == *pattern){
-	// then search pattern
-	int x = search(in,pattern);
- 	if(x == 1){
-		return count;	
+   
+  char *p, *q, *sub;
+
+  for(sub = in; *sub; sub++){
+    p = sub;
+    q = pattern;
+
+    int i = 0;
+
+    while(*q){
+    	if(*q++ != *p++){
+   		break;
 	}
-  }
-  count++;
-  in++;
+	i++;
+    }
+    if( !(strlen(pattern) - i) ){
+    	
+	return sub - in;
+
+    }
   } 
-
-return -1;
-}
-
-int search(char* start, char* pattern){
-
-// if we see exact pattern
-  char* copy = start;
-  char* patrn = pattern;
-
-  while(*patrn == *copy){
-    patrn++;
-    copy++;
-  }
-  
-  if( !*patrn ){
-	return 1;
-  }
-
-
-return 0;
+   
+	return -1;
 }
