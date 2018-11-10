@@ -18,9 +18,7 @@ int main(){
 	
 	
 	if( !takeOrNotTakeInput ){
-		
 		// if the user doesn't want to give specific input
-
 		rows = 5;
 		cols = 4;
 
@@ -76,6 +74,8 @@ int main(){
 			return -1;
 		}
 
+
+		free(in);
 	return 0;
 }
 
@@ -105,6 +105,7 @@ int runLengthEncoding( int n , void(*x)(), void(*y)(), int col, int** in, int ro
 		return -1;
 	}
 
+	free(readings);
 	return 0;
 }
 
@@ -157,6 +158,7 @@ int compress(int* arr, int n, int* compressedArr, int* lenOfCompressedArr){
 	printf("Compression Rate");
 	// negatif compression rate means, it hasn't been compressed rather expended by the rule of the algorithm.
 	printf("\n\n%.1f\n", (float)n / currIndexOfCompArr - 1 );
+
 	return 0;
 }
 
