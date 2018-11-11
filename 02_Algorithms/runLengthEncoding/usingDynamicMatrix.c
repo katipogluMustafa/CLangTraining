@@ -1,8 +1,11 @@
 #include<stdio.h>
 #include<stdlib.h>
+#include<string.h>
+
 
 int main(){
 
+	int takeYesNoInput();
 	void printMatrix(int, int**,int);
 	void scanRowByRow( int, int**, int, int*, int );
 	void scanColByCol( int, int**, int, int*, int );
@@ -12,11 +15,13 @@ int main(){
 	int i,j,rows,cols,n;
 	int takeOrNotTakeInput;
 
-
+	/*
 	printf("Would you like to give input, or just see the output using exampe input ? [0-1] : ");
 	scanf("%d",&takeOrNotTakeInput);
-	
-	
+	*/
+	printf("Would you like to give input, or just see the output using exampe input ? [yes-no] : ");
+	takeOrNotTakeInput = takeYesNoInput();
+
 	if( !takeOrNotTakeInput ){
 		// if the user doesn't want to give specific input
 		rows = 5;
@@ -282,4 +287,46 @@ void printArray(int* arr, int n){
 		printf( "%d ", *( arr + i ) );
 	}
 	printf("\n\n");
+}
+
+// if the answers is yes, return 1, else return 0
+int takeYesNoInput(){
+	char myToLower(char);
+	int myStrLen(char* str);
+
+	int i,len;
+	char str[10];
+
+	scanf("%s",str);
+
+	len = myStrLen(str);
+	for(i = 0; i < len;i++){
+		myToLower(str[i]);
+	}
+
+	if( !strcmp(str,"yes") ){
+		return 1;
+	}
+
+	return 0;
+}
+
+char myToLower(char character){
+	
+	if( character >= 'a' && character <= 'z' ){
+		return character;
+	}else if( character >= 'A' && character <= 'Z' ){
+		return character + 32;
+	}
+
+	return -1;
+}
+
+int myStrLen(char* str){
+	int count = 0;
+	while(*str++){
+		count++;
+	}
+
+	return count;
 }
