@@ -19,7 +19,10 @@ int main(){
 	printf("Would you like to give input, or just see the output using exampe input ? [0-1] : ");
 	scanf("%d",&takeOrNotTakeInput);
 	*/
+	
+
 	printf("Would you like to give input, or just see the output using exampe input ? [yes-no] : ");
+	// if the input is not yes exactly, we are gonna go for no option.
 	takeOrNotTakeInput = takeYesNoInput();
 
 	if( !takeOrNotTakeInput ){
