@@ -301,17 +301,118 @@ Some computers require that any data object larger than a char must be assigned 
 ```c
 /* Allignment Example */
 
-struct s1{
+struct ALIGN_EXAMP{
 	char mem1;
 	short mem2;
 	char mem3;
-}
+}s1;
+```
+* If the computer has no alignment restrictions, sl would be stored as shown in Figure 9.2.
+
+    ![Structure Allocation Without Alignment Restrictions](img/structureAllocationWithoutAllignmentRestrictions.png)
+
+* If the computer requires objects larger than a char to be stored at even
+  addresses, 51 would be stored as shown in Figure 9-3.
+  
+    ![Structure Allocation With Alignment Restrictions](img/structureAllocationWithAllignmentRestrictions.png)
+
+Note that you can avoid these holes by rearranging the member declarations:
+
+```c
+struct ALIGN_EXAMP{
+    char mem1,mem3;
+    short mem2;
+} s1;    
 ```
 
+* Because structures can be allocated differently on different machines,
+  you should be careful about accessing them in a portable manner. One
+  way to avoid portability problems is to make sure that all members are
+  **naturally aligned**.
+    
+    * **Natural alignment** means that an object's address is evenly divisible by its size.
+        * For example, all 2-byte objects would have an
+        even address and all 4-byte objects would have addresses divisible by four.
+        Natural alignment is the strictest alignment requirement that any computer
+        imposes, so if all members of a structure are naturally aligned, the
+        structure will be portable from one computer to another.
+    * You can control the alignment of members by using bit fields, as described in later in this document.
+    * You can also promote portability by accessing members by their names
+      rather than through unions or offsets from pointers.  
 
+## offsetof Macro
 
+![](img/offsetMacro.png)
 
+## Bitfields
 
+The smallest data type that C supports is char, which is usually 8 bits long.
+But in structures, it is possible to declare a smaller object called a bit field.
+Bit fields behave like other integer variables, except that you cannot take
+the address of a bit field and you cannot declare an array of bit fields.
 
+![](img/bitFieldSyntax.png)
 
+* The base type may be **int**, **unsigned int**, or **signed int**.
+    * If the bit field is declared as int, the implementation is free to decide whether it is an **unsigned int** or a **signed int**.For portable code, use the signed or unsigned qualifier. (Many compilers allow you to use enums, chars, and shorts as the base type.)
 
+* Bit fields may be named or unnamed.
+    * Unnamed fields cannot be accessed and are used only as padding.    
+    * As a special case, an unnamed bit field with a width of zero causes the next structure member to be aligned on the next **int** boundary.
+
+* The bit length is an integer constant expression that may not exceed
+  the length of an into On machines where ints are 16 bits long, for example,
+  the following is illegal:
+  
+  ```c
+    int too_long : 17  
+  ```
+
+* The compiler allocates at least a char's worth of memory and possibly
+  more. The precise number of bits allocated is implementation dependent,
+  but the compiler must allocate at least as many bits as are specified by the
+  bit field length, and the length must be an even multiple of chars.
+  
+* Consecutive
+  bit fields are packed into the allocated space until there is no room
+  left. Assuming your compiler allocates 16-bits for a bit field, the following
+  declarations would cause a, b, and c to be packed into a single 16-bit object
+  (see Figure 9-5).
+  
+  ![](img/9.5.png)    
+  
+* However, each implementation is free to arrange the bit fields within
+  the object in either increasing or decreasing order, so a compiler might
+  arrange the bit fields as shown in Figure 9-6.
+  
+  ![](img/9.6.png)    
+
+* If you are using bit fields to save storage space, you should try to
+  arrange the fields to avoid gaps.
+  
+  ![](img/9.7.png)      
+  
+As the preceding discussion indicates, the implementation of bit fields
+varies somewhat from one compiler to another. Consequently, you should
+use bit fields with care-they are inherently nonportable. There are two
+situations where the use of bit fields are valid:
+1. When efficient use of memory or data storage is a serious concern.
+2. When you need to map a structure to a predetermined organization.  
+
+As an example of using bit fields to save space, consider our DATE
+structure. Because a day value cannot exceed 31 and a month value cannot
+exceed 12, we can rewrite the DATE structure using bit fields as
+
+```c
+struct DATE
+{
+    unsigned int day : 5;
+    month: 4;
+    year : 11;
+} ;
+
+```
+
+Only 20 bits are needed for the three fields. Due to the bit field allocation
+rules, however, some compilers would allocate 24 bits whereas others
+would allocate 32 bits.
