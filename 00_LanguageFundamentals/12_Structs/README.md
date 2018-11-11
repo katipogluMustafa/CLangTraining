@@ -55,6 +55,8 @@ struct{
 including the struct keyword.
 	* Note that we use all capital letters for the typedef name to keep it distinct from regular variable names and tag names.
 
+* A tag name or typedef enables you to define the data structure just once even though you may use it over and over again. 
+	* Typically, structure definitions are placed in a header file where they can be accessed by multiple source files.
 
 ```c
 typedef struct {
@@ -222,13 +224,28 @@ The following, for example, is legal:
 ```c
 
 struct x {
+
 	int x;
+
 } x;
 
 
 ```
 
 ## Self-referencing Structures
+
+A structure or union may not contain instances of itself, but it may
+contain pointers to instances of itself.
+
+```c
+
+struct s{ 
+	int a,b;
+	float c;
+	struct s *pointer_to_s; /* This is legal */
+} ;
+
+```
 
 ```c
 
@@ -244,7 +261,7 @@ struct node {
 * As this example illustrates, you are permitted to declare pointers to
 structures that have not yet been declared. This feature enables you to create
 self-referential structures and also to create mutually referential structures
-and unions
+and unions.
 
 ```c
 
@@ -261,12 +278,35 @@ struct s2 {
 
 ```
 
+* Note that forward references are not permitted within typedefs.
+
+```c
+
+typedef struct {
+	int a;
+	FOO *p;
+
+	/* Erro because FOO is not declared yet.*/
+} FOO;
+
+```
+
+## Alignment of Structure Members
+
+Some computers require that any data object larger than a char must be assigned an address that is a multiple of a power of two.
+
+* Normally, these alignment restrictions are invisible to the programmer. However, they can create holes, or gaps, in structures.
 
 
+```c
+/* Allignment Example */
 
-
-
-
+struct s1{
+	char mem1;
+	short mem2;
+	char mem3;
+}
+```
 
 
 
