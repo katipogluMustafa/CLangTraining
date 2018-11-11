@@ -416,3 +416,14 @@ struct DATE
 Only 20 bits are needed for the three fields. Due to the bit field allocation
 rules, however, some compilers would allocate 24 bits whereas others
 would allocate 32 bits.
+
+Figure 9-8 and Figure 9-9 show two possible allocation
+schemes for an array of DATE structures.
+
+Note that each array element must begin at a char
+boundary.
+
+![](img/9.8.png)
+
+![](img/9.9.png)
+
