@@ -3,7 +3,7 @@
 #define TOO_LARGE 1e6   // differs from one machine to another
 
 typedef struct{
-    double sine,cosine,tangent;
+    double sine,cosine;
 } TRIG;
 
 TRIG* getTrigValues(double radian){
@@ -17,7 +17,17 @@ TRIG* getTrigValues(double radian){
 
     result.sine = sin(radian);
     result.cosine = cos(radian);
-    result.tangent = tan(radian);
 
     return &result;
+}
+
+int main(){
+
+	TRIG *myTrig = getTrigValues( 5 ); 
+
+	printf("%f", myTrig->sine );
+
+	printf("%f", myTrig->cosine );
+
+	return 0;
 }

@@ -132,11 +132,10 @@ struct
 {
 int a;
 float b;
-} s1, s2, sf(), *ps;
+} s1, s2, *ps;
     .
     .
 s1 = s2;
-s2 = sf() ;
 ps = &s1;
 s2 = *ps; 
 
