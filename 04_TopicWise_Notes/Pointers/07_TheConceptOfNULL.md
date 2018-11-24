@@ -136,3 +136,89 @@ char *myStrCpy( char *Dest, const char *Source )
 ```
 
 ---
+
+#### NOTE
+
+A null pointer and an uninitialized pointer are different. An uninitialized pointer can contain any value, whereas a pointer containing NULL does not reference any location in memory.
+
+---
+
+* Interestingly, we can assign a zero to a pointer, but we cannot assign any other integer value.
+
+```c
+   pi = 0;
+   pi = NULL;
+   pi = 100;   // Syntax error
+   pi = num;   // Syntax error
+```
+
+---
+
+* A pointer can be used as the sole operand of a logical expression. For example, we can test to see whether the pointer is set to NULL using the following sequence:
+
+```c
+if(pi) {
+      // Not NULL
+   } else {
+      // Is NULL
+   }
+   
+```
+
+---
+
+#### NOTE
+
+Either of the two following expressions are valid but are redundant. It may be clearer, but explicit comparison to NULL is not necessary.
+
+```c
+if(pi == NULL){
+    ...
+}
+
+if(pi != NULL){
+    ...
+}
+```
+
+---
+
+* A null pointer should never be dereferenced because it does not contain a valid address. When executed it will result in the program terminating.
+
+---
+
+## To NULL or not to NULL
+
+Which is better form: using NULL or using 0 when working with pointers?
+
+* Either is perfectly acceptable 
+    * The choice is one of preference.
+
+* Some developers prefer to use NULL because it is a reminder that we are working with pointers. Others feel this is unnecessary because the zero is simply hidden.
+
+* However, **NULL should not be used in contexts other than pointers**.
+    * It might work some of the time, but it is not intended to be used this way.
+
+* It can definitely be a problem when used in place of the ASCII NUL character.
+
+* This character is not defined in any standard C header file. It is equivalent to the character literal, '\0', which evaluates to the decimal value zero.
+
+* The meaning of zero changes depending on its context. 
+    * It might mean the integer zero in some contexts, and it might mean a null pointer in a different context. 
+    
+```c
+   int num;
+   int *pi = 0;   // Zero refers to the null pointer,NULL
+   pi = &num;
+   *pi = 0;        // Zero refers to the integer zero
+```
+
+---
+
+* We are accustomed to overloaded operators, such as 
+    * the asterisk used to declare a pointer,
+    * to dereference a pointer, 
+    * or to multiply.
+
+* The zero is also overloaded. 
+    * We may find this discomforting because we are not used to overloading operands.
