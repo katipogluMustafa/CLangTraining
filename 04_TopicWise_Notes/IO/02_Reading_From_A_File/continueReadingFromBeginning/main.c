@@ -43,6 +43,7 @@ int main(){
 	if ( feof(fp) ){
 	   printf("Reached end of the file at index %d",i);
 	   break;
+
 	}
   }
   output[n] = '\0';
@@ -57,7 +58,7 @@ int main(){
   }
 
    // Set the position to the beginnig of the file using void rewind(FILE* stream)
-   // rewind(fp);	// doesn't return anything so we can not check whether it was successfull
+   //rewind(fp);	// doesn't return anything so we can not check whether it was successfull
 
    // Set the position to the beginnig of the file using int fseek(FILE *stream, long int offset, int whence)
    // long int offset, is the number of bytes you want to from whence.
@@ -66,7 +67,7 @@ int main(){
    // SEEK_CUR -- Current position of the file pointer
    // SEEK_END -- End of file
 
-   if( fseek(fp, 0L, SEEK_SET)  ){
+  if( fseek(fp, 0L, SEEK_SET)  ){
 	printf("Error while setting the position to the beginning");
    }
 
