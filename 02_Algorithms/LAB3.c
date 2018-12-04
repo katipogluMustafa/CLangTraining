@@ -74,7 +74,6 @@ OZET sepetEkle(SEPET* mysepet, int n){
 		}
 		
 		mysepet[i].ID = x;
-		sepetOzeti.toplamAdet += 1;
 		sepetOzeti.toplamTutar += mysepet[i].birimFiyat;
 		x++;
 		
