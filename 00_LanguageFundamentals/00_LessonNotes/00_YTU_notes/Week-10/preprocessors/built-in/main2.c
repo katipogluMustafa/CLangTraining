@@ -1,8 +1,7 @@
 #include<stdio.h>
-#define CHECK(a,b)  				\
-	if( (a) != (b) ){ 				\
-		fail(a,b,__FILE__,__LINE__);\
-	}								\
+#define CHECK(a,b)  					\
+	if( (a) != (b) )				\
+		fail(a,b,__FILE__,__LINE__)						
 
 
 void fail(int a, int b, char*p, int line){

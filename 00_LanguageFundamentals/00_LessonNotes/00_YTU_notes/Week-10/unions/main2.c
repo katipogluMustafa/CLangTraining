@@ -14,7 +14,7 @@ struct VitalStat{
 		char city_of_birth[20];
 	}location;
 
-}
+};
 
 int main(){
 
