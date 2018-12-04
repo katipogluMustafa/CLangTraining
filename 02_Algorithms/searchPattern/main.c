@@ -14,16 +14,15 @@ int main(){
 
   if(fp == NULL){
       printf("File Opening Error!!");
-
+      return 1;
   }
   /* Print the input string 
   while (fgets(read_el, SIZE, fp) != NULL)
       printf(" %s ", read_el);
   */
-  fclose(fp);
   
-  char stxt[] = "ethics";
-  int position = searchPattern(read_el, stxt );
+  
+  char stxt[] = int position = searchPattern(read_el, stxt );
   
   if(position != -1){
 	

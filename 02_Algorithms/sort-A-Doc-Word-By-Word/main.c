@@ -78,17 +78,19 @@ int addWordToSentence(Sentence* sentence, struct word wrd ){
 	strcpy(temp->data, wrd.data);
 	temp->size = wrd.size;
 
+	// If Full
 	if(sentence->wordCapacity == sentence->currWordIndex){
 		// Expand the sentence
-		sentence->words = realloc(sentence->words, RATE * sizeof(struct word) * sentence->wordCapacity);
+		sentence->words = (struct word*)realloc(sentence->words, RATE * sizeof(struct word) * sentence->wordCapacity);
 		if(!sentence->words){
-			return -1;
+			return 1;
 		}
 		sentence->wordCapacity = sentence->wordCapacity * 2;
 	}
-	sentence->words[ sentence->currWordIndex ] = *temp;
 
-	sentence->currWordIndex += sentence->currWordIndex + 1;
+	sentence->words[ sentence->currWordIndex ] = &temp;
+
+	sentence->currWordIndex = sentence->currWordIndex + 1;
 	return 0;
 }
 
