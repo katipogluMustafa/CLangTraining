@@ -1,5 +1,3 @@
-#include "__HEAD__.h"
-
 #include<stdio.h>
 #include<stdlib.h>
 #include<assert.h>
