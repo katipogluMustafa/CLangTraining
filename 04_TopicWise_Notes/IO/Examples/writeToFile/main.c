@@ -16,6 +16,7 @@ typedef struct{
 } Sentence;
 
 void fillTheFileAsText(FILE* fp);
+
 Sentence splitStrinAsSentence(char* str);
 
 int main(void){
@@ -24,6 +25,7 @@ int main(void){
 
 	fillTheFileAsText(fp);
 
+	fclose(fp);
 
 	return 0;
 }
