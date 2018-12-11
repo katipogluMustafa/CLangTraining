@@ -339,8 +339,9 @@ int copyFileLineByLine( char* inFile, char* outFile ){
     return FAIL;
   }
 
-  // en sonda newline olsun diye LINESIZE - 1 yaptık.
-  while(  ( fgets(line, LINESIZE - 1, ) ) != NULL ){ 
+  // fgets line sonuna NULL eklediği için 1 taneyi null'a ayırmamız gerek yoksa buffer taşar.
+  // ard arda fgets kullanımında NULL ı yansıtmaz kendisi halleder.
+  while(  ( fgets(line, LINESIZE - 1, fp) ) != NULL ){ 
   	fputs(line, fp2);
   	lineNum++;
   }
