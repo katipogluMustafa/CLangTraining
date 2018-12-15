@@ -50,9 +50,9 @@ if( search(string) == FAIL ){
 
 * ftell fonksiyonuna
 	* Binary dosya gönderilirse
-		* Number of bytes from the beginning of the file.
+		* returns number of bytes from the beginning of the file.
 	* Text Dosya gönderilirse
-		* implementation defined value that only has meaning when used as an offset to an fseek;
+		* returns implementation defined value(which is the number of bytes from the beginning of the file but varies depending on the operatings system since it is a text file and different operating systems may have different implementations such as one would put \n at the end of the every line the other would put \r\n at the end of the every line, since we wouldn't be able to foresee these kinds of situations we'll need to use ftell function to obtain the OS dependent value of the current offset) that only has meaning when used as an offset to an fseek;
 
 ---
 
@@ -80,9 +80,10 @@ int main(){
 
 	print_file(filename);
 
-	// r+ seçmemizin sebebi eski verilerin üzerinde dğeişiklik yapmak,
-	// eğer a+ ile açsaydık yapamazdık. a+ sadece yeni ve ekleme ve değiştirmeye yarıyor.
-	// eskiden varolana erişip değişmede fseek() ile dahi hata alıyoruz.
+	// r+ seçmemizin sebebi eski verilerin üzerinde değişiklikler yapmak,
+	// eğer a+ ile açsaydık yapamazdık eski veri üzerinde değişiklik yapma imkanımız olmazdı.
+	// çünkü a+ sadece yeni veri ekleme ve değiştirmeye yarıyor.
+	
 	data_file = fopen(filename, "r+b");
 	list_file(data_file);
 
