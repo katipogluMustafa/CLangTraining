@@ -12,7 +12,7 @@ int main(){
 	strcpy(src, "This is tutorialspoint.com");
    	strcpy(dest, src);
 
-
+  
    	printf("Final copied string : %s\n", dest);
    	
   
