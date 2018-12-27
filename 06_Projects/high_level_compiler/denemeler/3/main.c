@@ -1,43 +1,71 @@
 #include<stdio.h>
 #include<ctype.h>
 #include<string.h>
-
-#define N 100
-#define BEGIN "{"
-#define END "}"
-#define BEGIN_PARAMETER "("
-#define END_PARAMETER ")"
-#define PRINT_LINE "printf(\"%s\","
-#define GET_VAL "scanf("
+#include<stdlib.h>
 
 
-int main(){
+int isQuote(char x);
+int isAddress(char x);
+char* removeChar(char* src, char* pointer);
+char* removeAfterwards(char* src, char* pointer);
 
-	FILE* in = fopen("in.txt","r");
-	FILE* out = fopen("out.txt","w+");
-	char tmp;
-	char buffer[N];
-	int i = 0;
+int isQuote(char x){
+	int ret = 0;
 
-	/* GET_VAL */
-
-	fgets(buffer,100,in);
-
-	printf("%s\n",buffer);
-	char* ptr;
-	if( ( ptr = strstr(buffer, "GET_VAL") ) != NULL  ){
-		fprintf(out,"%s", GET_VAL);
-		fprintf(out,"%s", ptr + strlen("GET_VAL") );
-		fprintf(out,"%s", END_PARAMETER );
-			
+	if( x == '"' ){
+		ret = 1;
 	}
 
-
-
-
-	return 0;
+	return ret;
 }
 
-char* deleteQuotes(char* src){
-	char* tmp = (char*)malloc( strlen(src) * sizeof(char) );
+int isAddress(char x){
+	int ret = 0;
+
+	if( x == '$'){
+		ret = 1;
+	}
+
+	return ret;
+}
+
+char* removeChar(char* src, char* pointer){
+
+	int x = strlen(src) - strlen(pointer);
+	char* temp = (char*)malloc( strlen(src) * sizeof(char) );
+	
+	memcpy(temp, src, x );
+	memcpy(temp + x, pointer+1, strlen(pointer) );
+	temp[strlen(src) - 1 ] = '\0';
+
+	return temp;
+}
+void removeCharV2(char* src, char* pointer){
+
+	int x = strlen(src) - strlen(pointer);
+	char* temp = (char*)malloc( strlen(src) * sizeof(char) );
+	
+	memcpy(temp, src, x );
+	memcpy(temp + x, pointer+1, strlen(pointer) );
+	temp[strlen(src) - 1 ] = '\0';
+
+	free(src);
+	src = temp;
+}
+
+void removeCharV3(char* src, int index){
+
+	strcpy(src+index, src+index+1);
+
+}
+
+char* removeAfterwards(char* src, char* pointer){
+
+	int x = strlen(src) - strlen(pointer);
+	char* temp = (char*)malloc( strlen(src) * sizeof(char) );
+	
+	memcpy(temp, src, x );
+	temp[ x+1 ] = '\0';
+
+	return temp;
 }
