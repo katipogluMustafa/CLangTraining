@@ -1,1 +1,0 @@
-printf("%s", “Dizinin eleman sayisini giriniz”)

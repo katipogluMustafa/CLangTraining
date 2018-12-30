@@ -1,1 +1,0 @@
-PRINT_LINE “Dizinin eleman sayisini giriniz”
