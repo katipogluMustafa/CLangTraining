@@ -6,7 +6,7 @@ int main(int argc, char* argv[]){
 
 	char *s1 = "1234560";
 	char *s2 = "abcdeeee";
-	char *s3 = malloc(strlen(s1) + strlen(s2) + 1);
+	char *s3 = malloc( strlen(s1) + strlen(s2) + 1);
 
 
 	if(s3 != NULL) {
