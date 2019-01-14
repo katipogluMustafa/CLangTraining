@@ -8,7 +8,6 @@ int main(int argc, char *argv[]){
 	char str1[] = "let the sentece begin...", str2[] = "let the sentence end...";
 	char str3[strlen(str1) + strlen(str2) - 1];
 
-
 	// Concatenate str1 and str2 and store the result indiside str3.
 	strcpy(str3, str1);
 	strcat(str3, str2);

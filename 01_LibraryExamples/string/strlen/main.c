@@ -33,6 +33,16 @@ int strlen3(char* str){
 	return i;
 }
 
+size_t strlen4(char* str){
+	char* temp = str;
+	size_t sayac = 0;
+
+	while(*temp++)
+		sayac++;
+
+	return sayac;
+}
+
 /*
  * The expression *str++ illustrates a common idiom in C. 
 
