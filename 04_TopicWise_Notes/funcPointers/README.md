@@ -34,7 +34,6 @@ int compare_scores(const void* score_a, const void* score_b)
 ```c
 qsort(scores, 7, sizeof(int), compare_scores);
 ```
-
 ## Func Pointer  Array
 
 ![](img/3.jpg)
