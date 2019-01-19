@@ -5,4 +5,4 @@ archiveMaking/checksum.o: archiveMaking/checksum.c
 libhfsecurity.a: archiveMaking/encrypt.o archiveMaking/checksum.o
 	ar -rcs archiveMaking/libhfsecurity.a archiveMaking/encrypt.o archiveMaking/checksum.o
 main: main.c libhfsecurity.a
-	gcc main.c -L ./archiveMaking/ -lhfsecurity -o main
+	gcc main.c -L archiveMaking -lhfsecurity -o main

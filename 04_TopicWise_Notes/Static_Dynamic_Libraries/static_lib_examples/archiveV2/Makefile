@@ -5,4 +5,4 @@ obj/checksum.o: libhfsecurity/checksum.c
 libhfsecurity.a: obj/encrypt.o obj/checksum.o
 	ar -rcs libhfsecurity/libhfsecurity.a obj/encrypt.o obj/checksum.o
 main: main.c libhfsecurity.a
-	gcc main.c -I ./include/ -L ./libhfsecurity/ -lhfsecurity -o main
+	gcc main.c -I include -L libhfsecurity -lhfsecurity -o main
