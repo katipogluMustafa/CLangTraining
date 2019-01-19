@@ -73,4 +73,27 @@
 
 ---
 
-#### What you call your dynamic library depends on your platform ?
+#### What you call your dynamic library depends on your platform
+
+* Dynamic libraries are available on most operating systems, and they all work in pretty much the same way. 
+* But what they’re called can vary a lot. 
+    * On Windows, dynamic libraries are usually called **dynamic link libraries** and they have the extension **.dll**.
+    * On Linux and Unix, they’re **shared object** files ( **.so**)
+    * On the Mac, they’re just called **dynamic libraries** ( **.dylib**). 
+
+* But even though the files have different extensions, you can create them in very similar ways:
+    ![](img/7.jpg)
+    * The -shared option tells gcc that you want to convert a .o object file into a dynamic library. 
+    * When the compiler creates the dynamic library, it will store the name of the library inside the file. 
+        * So, if you create a library called <i>libhfcal.so</i> on a Linux machine, the <i>libhfcal.so</i> **file will remember that its library name is hfcal**. 
+
+* If you compile a library with one name, you can’t just rename the file afterward.
+    * If you need to rename a library, recompile it with the new name.
+
+### Let's run v2 Example
+
+![](img/10.png)
+
+![](img/11.png)
+
+![](img/9.png)
