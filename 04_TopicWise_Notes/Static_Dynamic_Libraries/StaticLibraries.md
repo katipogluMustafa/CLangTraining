@@ -79,3 +79,27 @@ gcc test_code.c -L/my_lib -lhfsecurity -o test_code
 * If you need to link to an archive called libfred.a, use -lfred.
 
 * The -L flag should appear after the source files in the gcc command.    
+
+## Notes
+
+* see what’s inside an archive
+    * ar -t < filename > will list the contents of the archive.
+* extract a single object file from an archive
+    ```bash
+      # extract encrypt.o from libhfsecurity archieve
+      ar -x libhfsecurity.a encrypt.o
+    ```
+* Why is it called “static” linking?
+    * Because it can’t change once it’s been done. When two files are linked together statically, it’s like mixing coffee with milk: you can’t separate them afterward.    
+* wanna use linker ?
+    ```bash
+    ld
+    ```    
+* How linker works ?
+    * Linker stitches pieces of compiled code together.
+    * An object file might need to call a function that’s stored in some other file. I link together the point in one file where the function call is made to the point in another file where the function lives.
+
+* -c flag means just create object file.
+    ```bash
+    gcc -c main.c -o main.o  
+    ```
