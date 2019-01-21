@@ -97,3 +97,41 @@
 ![](img/11.png)
 
 ![](img/9.png)
+
+
+## Bullet Points
+
+* Dynamic libraries are linked to programs at runtime.
+
+* Dynamic libraries are created from one or more object files.
+
+* On some machines, you need to compile them with the -fPIC option.(PIC = Position Independent Code)
+
+* -fPIC makes the object code position-independent.
+
+* You can skip -fPIC on many systems.
+
+* The -shared compiler option creates a dynamic library.
+
+* Dynamic libraries have different names on different systems.
+
+* Life is simpler if your dynamic libraries are stored in standard directories.
+
+* Otherwise, you might need to set PATH and LD_LIBRARY_PATH variables.
+
+## Q-A
+* I tried to change the name of my library by renaming the file, but the compiler couldn’t find it anymore. Why not?
+    * When the compiler creates a dynamic library, it stores the name of the library inside the file. If you rename the file, it will then have the wrong name inside the file and will get confused. If you want to change its name, you should recompile the library.
+
+* Which is better? Static or dynamic linking?
+    * It depends.
+     * Static linking means you get a small, fast executable file that is easier to move from machine to machine.
+     * Dynamic linking means that you can configure the program at runtime more.
+* Are dynamic libraries the best way of configuring an application?
+    * Usually, it’s simpler to use configuration files. 
+        * But if you’re going connect to some external device, you’d normally need separate dynamic libraries to act as drivers.
+## Notes
+
+* Static programs are simple to use. Single files.
+* Use dynamic-linking for bigger programs.
+
