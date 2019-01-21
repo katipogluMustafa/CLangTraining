@@ -1,3 +1,5 @@
+## Makefile For Main Version Of Software
+
 hfcal.o:
 	gcc -fPIC -c source/hfcal.c -o bin/hfcal.o
 elliptical.o:
