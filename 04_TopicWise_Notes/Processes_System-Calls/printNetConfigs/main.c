@@ -1,7 +1,7 @@
 #include<stdio.h>
-#include<unistd.h>
-#include<string.h>
-#include<errno.h>
+#include<unistd.h>  // for exec() functions
+#include<string.h>  // strerror() function
+#include<errno.h>   // for errno variable
 
 int main(){
   if( execl( "/sbin/ifconfig", "/sbin/ifconfig",NULL )  == -1 ){
