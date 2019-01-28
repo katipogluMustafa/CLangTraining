@@ -36,7 +36,7 @@ void err_quit(char* msg){
 void err_sys(char* fmt, ...){
   va_list argList;
   va_start(argList, fmt);
-  
+  int err = errno;
   int d;
   char c;
   char* s;
@@ -80,5 +80,6 @@ void err_sys(char* fmt, ...){
     fmt++;
   }
   va_end(argList);
-  raise(SIGSYS);
+  fprintf(stderr, ": %s\n", strerror(err));
+  exit(1);
 }
