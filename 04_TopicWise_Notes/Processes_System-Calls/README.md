@@ -140,5 +140,3 @@
 
 ![](img/5.jpg)   
 
-#### Passing environment variables
-
