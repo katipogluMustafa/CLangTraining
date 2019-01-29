@@ -333,3 +333,75 @@ If the read is successful, the number of bytes read is returned. If the end of f
   * Finally, the third argument historically has been an unsigned integer, to allow a 16-bit implementation to read or write up to 65,534 bytes at a time. 
     *  With the 1990 POSIX.1 standard, the primitive system data type **ssize_t** was introduced to provide the signed return value, and the unsigned size_t was used for the third argument.  
 
+
+## WRITE Function
+
+```c
+#include<unistd.h>
+
+ssize_t write(int fd, const void* buf, size_t nbytes);
+
+// returns number of bytes if OK, -1 on error
+```
+
+* The return value is usually equal to the nbytes argument; otherwise, an error has occurred. 
+  * A common cause for a write error is either filling up a disk or exceeding the file size limit for a given process
+
+* For a regular file, the write operation starts at the file’s current offset. 
+  * If the **O_APPEND** option was specified when the file was opened, the file’s offset is set to the current end of file before each write operation. 
+
+* After a successful write, the file’s offset is incremented by the number of bytes actually written.
+
+
+
+## I/O Efficiency 
+
+* Copy standard input to standard output
+
+```c
+#include "apue.h"
+
+#define BUFFSIZE    4096
+
+int
+main(void)
+{
+    int     n;
+    char    buf[BUFFSIZE];
+
+    while ((n = read(STDIN_FILENO, buf, BUFFSIZE)) > 0)
+        if (write(STDOUT_FILENO, buf, n) != n)
+            err_sys("write error");
+
+    if (n < 0)
+        err_sys("read error");
+
+    exit(0);
+}
+```
+
+* The following caveats apply to this program.
+
+*  It reads from standard input and writes to standard output, assuming that these have been set up by the shell before this program is executed. 
+  * Indeed, all normal UNIX system shells provide a way to open a file for reading on standard input and to create (or rewrite) a file on standard output. 
+  * This prevents the program from having to open the input and output files, and allows the user to take advantage of the shell’s I/O redirection facilities.
+
+* The program doesn’t close the input file or output file. 
+  * Instead, the program uses the feature of the UNIX kernel that closes all open file descriptors in a process when that process terminates.
+
+* This example works for both text files and binary files, since there is no difference between the two to the UNIX kernel.
+
+* One question we haven’t answered, however, is **how we chose the BUFFSIZE value**.
+  
+  * Timing results for reading with different buffer sizes on Linux
+  
+  ![](img/4.jpg)
+
+* The file was read using the program shown in Figure, with standard output redirected to /dev/null. 
+  * The file system used for this test was the Linux ext4 file system with 4,096-byte blocks ( The **st_blksize** value is 4,096.)
+  * This accounts for the minimum in the system time occurring at the few timing measurements starting around a BUFFSIZE of 4,096. 
+  * Increasing the buffer size beyond this limit has little positive effect.
+
+> Beware when trying to measure the performance of programs that read and write files. The operating system will try to cache the file incore, so if you measure the performance of the program repeatedly, the successive timings will likely be better than the first. This improvement occurs because the first run causes the file to be entered into the system’s cache, and successive runs access the file from the system’s cache instead of from the disk. 
+ 
+
