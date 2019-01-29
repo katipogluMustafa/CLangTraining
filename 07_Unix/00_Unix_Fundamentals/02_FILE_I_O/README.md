@@ -234,10 +234,58 @@ currPosition = lseek(fd, 0, SEEK_CUR);
   * Depending on the file system implementation, when you write after seeking past the end of a file, new disk blocks might be allocated to store the data, 
   * but there is no need to allocate disk blocks for the data between the old end of file and the location where you start writing.
 
+```c
+#include<stdio.h>
+#include<stdlib.h>
+#include<unistd.h>
+#include<fcntl.h>
+
+char    buf1[] = "abcdefghij";
+char    buf2[] = "ABCDEFGHIJ";
+
+int
+main(void)
+{
+    int     fd;
+
+    if ((fd = creat("file.hole", FILE_MODE)) < 0)
+        err_sys("creat error");
+
+    if (write(fd, buf1, 10) != 10)
+        err_sys("buf1 write error");
+    /* offset now = 10 */
+
+    if (lseek(fd, 16384, SEEK_SET) == -1)
+        err_sys("lseek error");
+    /* offset now = 16384 */
+
+    if (write(fd, buf2, 10) != 10)
+        err_sys("buf2 write error");
+    /* offset now = 16394 */
+
+    exit(0);
+}
+```
+
+![](img/2.png)
+
+* We use the **od command** to look at the contents of the file. The -c flag tells it to print the contents as characters.
+
+![](img/3.png)
+
+* Although both files are the same size, the file without holes consumes 20 disk blocks, whereas the file with holes consumes only 8 blocks.
+
+
 * Because the offset address that lseek uses is represented by an off_t, implementations are allowed to support whatever size is appropriate on their particular platform.
   * Most platforms today provide two sets of interfaces to manipulate file offsets: one set that uses 32-bit file offsets and another set that uses 64-bit file offsets.
 
 * The SUS provides a way for applications to determine which environments are supported through the sysconf function. Image summarizes the sysconf constants that are defined.
   ![](img/1.jpg)
+
+* Figure summarizes the size in bytes of the off_t data type for the platforms covered in this book when an application doesn’t define _FILE_OFFSET_BITS, as well as the size when an application defines _FILE_OFFSET_BITS to have a value of either 32 or 64.
+
+![](img/3.jpg)
+
+* Note that even though you might enable 64-bit file offsets, your ability to create a file larger than 2 GB (2<sup>31</sup>–1 bytes) depends on the underlying file system type.
 
 
