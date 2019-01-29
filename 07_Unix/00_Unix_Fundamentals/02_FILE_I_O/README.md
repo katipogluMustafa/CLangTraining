@@ -403,5 +403,41 @@ main(void)
   * Increasing the buffer size beyond this limit has little positive effect.
 
 > Beware when trying to measure the performance of programs that read and write files. The operating system will try to cache the file incore, so if you measure the performance of the program repeatedly, the successive timings will likely be better than the first. This improvement occurs because the first run causes the file to be entered into the system’s cache, and successive runs access the file from the system’s cache instead of from the disk. 
- 
+
+## FILE SHARING
+
+* The UNIX System supports the sharing of open files among different processes.
+
+* The kernel uses three data structures to represent an open file, and the relationships among them determine the effect one process has on another with regard to file sharing.
+
+  * Every process has an entry in the process table. Within each process table entry is a table of open file descriptors, which we can think of as a vector, with one entry per descriptor. Associated with each file descriptor are
+
+    * (a) The file descriptor flags
+      
+ 	* Kernel data structures for open files
+          
+ 	  ![Kernel data structures for open files](img/5.jpg) 
+   
+    * A pointer to a file table entry
+  
+  * The kernel maintains a file table for all open files. Each file table entry contains
+  
+    * a) The file status flags for the file, such as read, write, append, sync, and nonblocking
+
+    * (b) The current file offset
+
+    * (c) A pointer to the v-node table entry for the file
+
+  * Each open file (or device) has a v-node structure that contains information about the type of file and pointers to functions that operate on the file. 
+    
+    * For most files, the v-node also contains the i-node for the file. 
+    
+    * This information is read from disk when the file is opened, so that all the pertinent information about the file is readily available. 
+       
+      * For example, the i-node contains the owner of the file, the size of the file, pointers to where the actual data blocks for the file are located on disk, and so on.
+  * Linux has no v-node. 
+    
+    * Instead, a generic i-node structure is used. 
+    
+    * Although the implementations differ, the v-node is conceptually the same as a generic i-node. Both point to an i-node structure specific to the file system.
 
