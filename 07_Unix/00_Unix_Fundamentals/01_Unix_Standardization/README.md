@@ -254,7 +254,7 @@ END {
 
 * Below Summarizes the results
 
-```
+```c
 /* Print All Possible Values */
 #include "apue.h"
 #include <errno.h>

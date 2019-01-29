@@ -410,7 +410,7 @@ main(void)
 
 * The kernel uses three data structures to represent an open file, and the relationships among them determine the effect one process has on another with regard to file sharing.
 
-  * Every process has an entry in the process table. Within each process table entry is a table of open file descriptors, which we can think of as a vector, with one entry per descriptor. Associated with each file descriptor are
+  * **Every process** has an entry in the process table. Within each process table entry is a table of open file descriptors, which we can think of as a vector, with one entry per descriptor. Associated with each file descriptor are
 
     * (a) The file descriptor flags
       
