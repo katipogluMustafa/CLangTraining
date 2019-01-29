@@ -40,6 +40,8 @@ int openat(int fd, const char* path, int oflag, .../* mode_t mode */);
 
 * This function has a multitude of options, which are specified by the oflag argument.
 
+---
+
 ## oflag argument
 
 * This argument is formed by ORing together one or more of the following constants from the `<fcntl.h>` header:
@@ -89,7 +91,79 @@ O_TTY_INIT	// When opening a terminal device that is not already open, set the n
 
 O_DSYNC		// Have each write wait for physical I/O to complete, but don’t wait for file attributes to be updated if they don’t affect the ability to read the data just written.
 
-
+O_RSYNC 	// Have each read operation on the file descriptor wait until any pending writes for the same portion of the file are complete.
+// Linux 3.2.0 supports the O_DSYNC flag, but treats the O_RSYNC flag the same as O_SYNC.
 
 ```
 
+* The O_DSYNC and O_SYNC flags are similar, but subtly different. 
+  * The O_DSYNC flag affects a file’s attributes only when they need to be updated to reflect a change in the file’s data (for example, update the file’s size to reflect more data). 
+  * With the O_SYNC flag, data and attributes are always updated synchronously. 
+  * When overwriting an existing part of a file opened with the O_DSYNC flag, the file times wouldn’t be updated synchronously. 
+  * In contrast, if we had opened the file with the O_SYNC flag, every write to the file would update the file’s times before the write returns, regardless of whether we were writing over existing bytes or appending to the file.
+
+---
+
+
+* The file descriptor returned by open and openat is guaranteed to be the lowest-numbered unused descriptor.
+
+* The fd parameter distinguishes the openat function from the open function. There are three possibilities:
+
+1. The path parameter specifies an absolute pathname. 
+  * In this case, the fd parameter is ignored and the openat function behaves like the open function.
+
+2. The path parameter specifies a relative pathname and the fd parameter is a file descriptor that specifies the starting location in the file system where the relative pathname is to be evaluated.
+  * The fd parameter is obtained by opening the directory where the relative pathname is to be evaluated.
+
+3. The path parameter specifies a relative pathname and the fd parameter has the special value AT_FDCWD.
+  * In this case, the pathname is evaluated starting in the current working directory and the openat function behaves like the open function.
+
+---
+
+The openat function is one of a class of functions added to the latest version of POSIX.1 to address two problems.
+
+1. It gives threads a way to use relative pathnames to open files in directories other than the current working directory.
+
+2. It provides a way to avoid time-of-check-to-time-of-use (TOCTTOU) errors.
+
+* The basic idea behind **TOCTTOU** errors is that a program is vulnerable if it makes two file-based function calls where the second call depends on the results of the first call. Because the two calls are not atomic, the file can change between the two calls, thereby invalidating the results of the first call, leading to a program error. 
+
+--- 
+
+### Filename and Pathname Truncation
+
+* With POSIX.1, the constant _POSIX_NO_TRUNC determines whether long filenames and long components of pathnames are truncated or an error is returned.
+  * We can use **fpathconf** or **pathconf** to query a directory to see which behavior is supported.
+
+If _POSIX_NO_TRUNC is in effect, errno is set to ENAMETOOLONG, and an error status is returned if any filename component of the pathname exceeds NAME_MAX.
+
+
+* Most modern file systems support a maximum of 255 characters for filenames. 
+
+## CREAT FUNCTION
+
+A new file can also be created by calling the creat function.
+
+```c
+#include<fcntl.h>
+
+int creat(const char* path, mode_t mode);
+
+// Returns: file descriptor opened for write-only if OK, –1 on error
+```
+
+* This function equivalent to
+
+```c
+open(path, O_WRONLY | O_CREAT | O_TRUNC, mode);
+```
+
+* One deficiency with creat is that the file is opened only for writing.
+
+* Before the new version of open was provided, if we were creating a temporary file that we wanted to write and then read back, we had to call creat, close, and then open. 
+
+* A better way is to use the open function, as in
+
+```c
+open(path, O_RDRW | O_CREAT | O_TRUNC, mode);
+```
