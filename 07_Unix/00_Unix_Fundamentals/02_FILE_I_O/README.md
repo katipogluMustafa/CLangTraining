@@ -140,7 +140,7 @@ If _POSIX_NO_TRUNC is in effect, errno is set to ENAMETOOLONG, and an error stat
 
 * Most modern file systems support a maximum of 255 characters for filenames. 
 
-## CREAT FUNCTION
+## CREAT Function
 
 A new file can also be created by calling the creat function.
 
@@ -167,3 +167,77 @@ open(path, O_WRONLY | O_CREAT | O_TRUNC, mode);
 ```c
 open(path, O_RDRW | O_CREAT | O_TRUNC, mode);
 ```
+
+## CLOSE Function
+
+```c
+#include<unistd.h>
+int close(int fd);
+
+// Returns 0 if OK, -1 on error
+```
+
+* Closing a file also releases any record locks that the process may have on the file.
+
+* When a process terminates, all of its open files are closed automatically by the kernel. 
+  * Many programs take advantage of this fact and don’t explicitly close open files.
+
+## LSEEK Function
+
+* Every open file has an associated “current file offset,” normally a non-negative integer that measures the number of bytes from the beginning of the file.
+
+* Read and write operations normally start at the current file offset and cause the offset to be incremented by the number of bytes read or written. 
+
+* By default, this offset is initialized to 0 when a file is opened, unless the O_APPEND option is specified.
+
+
+```c
+#include<unistd.h>
+
+off_t lseek(int fd, off_t offset, int whence);
+
+// Returns: new file offset if OK, -1 on error
+```
+
+* The interpretation of the offset depends on the value of the whence argument.
+  * If whence is SEEK_SET, the file’s offset is set to offset bytes from the beginning of the file.
+  * If whence is SEEK_CUR, the file’s offset is set to its current value plus the offset. The offset can be positive or negative.
+  * If whence is SEEK_END, the file’s offset is set to the size of the file plus the offset. The offset can be positive or negative.
+
+* Because a successful call to lseek returns the new file offset, we can seek zero bytes from the current position to determine the current offset:
+
+```c
+off_t currPosition;
+currPosition = lseek(fd, 0, SEEK_CUR);
+```
+
+* This technique can also be used to determine if a file is capable of seeking. 
+  * If the file descriptor refers to a **pipe**, **FIFO**, or **socket**, lseek sets errno to **ESPIPE** and returns –1.
+
+* The character l in the name lseek means “long integer.”
+
+* Normally, a file’s current offset must be a non-negative integer. 
+  * It is possible, however, that certain devices could allow negative offsets. 
+  * But for regular files, the offset must be non-negative. 
+  * Because negative offsets are possible, we should be careful to compare the return value from lseek as being equal to or not equal to –1, rather than testing whether it is less than 0.
+
+* Because the offset (off_t) is a signed data type we lose a factor of 2 in the maximum file size. 
+  * If off_t is a 32-bit integer, the maximum file size is 2<sup>31</sup>–1 bytes.
+
+* lseek only records the current file offset within the kernel—it does not cause any I/O to take place. This offset is then used by the next read or write operation.
+
+* The file’s offset can be greater than the file’s current size, in which case the next write to the file will extend the file. 
+  * This is referred to as **creating a hole in a file** and is allowed. 
+  * Any bytes in a file that have not been written are read back as 0.
+
+* A hole in a file isn’t required to have storage backing it on disk. 
+  * Depending on the file system implementation, when you write after seeking past the end of a file, new disk blocks might be allocated to store the data, 
+  * but there is no need to allocate disk blocks for the data between the old end of file and the location where you start writing.
+
+* Because the offset address that lseek uses is represented by an off_t, implementations are allowed to support whatever size is appropriate on their particular platform.
+  * Most platforms today provide two sets of interfaces to manipulate file offsets: one set that uses 32-bit file offsets and another set that uses 64-bit file offsets.
+
+* The SUS provides a way for applications to determine which environments are supported through the sysconf function. Image summarizes the sysconf constants that are defined.
+  ![](img/1.jpg)
+
+
