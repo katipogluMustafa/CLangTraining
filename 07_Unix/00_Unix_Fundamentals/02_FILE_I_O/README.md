@@ -802,4 +802,42 @@ int ioctl(int fd, int request, ...);
 
 * We use the ioctl function in Section 18 to fetch and set the size of a terminal’s window, and in Section 19 when we access the advanced features of pseudo terminals.
 
+## /dev/fd
 
+Newer systems provide a directory named /dev/fd whose entries are files named0, 1,2, and so on.Opening the file /dev/fd/n is equivalent to duplicating descriptor n, assuming that descriptor n is open.
+
+```c
+fd = open("/dev/fd/0", mode); // most systems ignore the specified mode, whereas others require that it be a subset of the mode used when the referenced file (standard input, in this case) was originally opened. 
+// is equivalent to
+fd = dup(0); 
+```
+
+* Because the previous open is equivalent to `fd = dup(0)` the descriptors 0 and fd share the same file table entry.
+* For example, if descriptor 0 was opened read-only, we can only read on fd. Even if the system ignores the open mode and the call succeeds, we still can’t write to fd.
+    ```c
+    fd = open("/dev/fd/0", O_RDWR);
+    ```
+
+* The Linux implementation of /dev/fd is an exception. 
+    * It maps file descriptors into symbolic links pointing to the underlying physical files. 
+    * When you open /dev/fd/0, for example, you are really opening the file associated with your standard input. 
+    * Thus the mode of the new file descriptor returned is unrelated to the mode of the /dev/fd file descriptor.
+
+* We can also call creat with a /dev/fd pathname argument as well as specify O_CREAT in a call to open. This allows a program that calls creat to still work if the pathname argument is /dev/fd/1, for example.
+    * Beware of doing this on Linux. 
+    * Because the Linux implementation uses symbolic links to the real files, using creat on a /dev/fd file will result in the underlying file being truncated.
+    
+* Some systems provide the pathnames /dev/stdin, /dev/stdout, and /dev/stderr. These pathnames are equivalent to /dev/fd/0, /dev/fd/1, and /dev/fd/2, respectively.
+
+* The main use of the /dev/fd files is from the shell. It allows programs that use pathname arguments to handle standard input and standard output in the same manner as other pathnames. 
+    ```bash
+    filter file2 | cat file1 - file3 | lpr
+    ```
+    * First, cat reads file1, then its standard input (the output of the filter program on file2), and then file3. If /dev/fd is supported, the special handling of - can be removed from cat, and we can enter
+    
+    ```bash
+    filter file2 | cat file1 /dev/fd/0 file3 | lpr
+    ```
+    * The special meaning of - as a command-line argument to refer to the standard input or the standard output is a kludge that has crept into many programs. 
+    * There are also problems if we specify - as the first file, as it looks like the start of another command-line option. 
+    * Using /dev/fd is a step toward uniformity and cleanliness.
