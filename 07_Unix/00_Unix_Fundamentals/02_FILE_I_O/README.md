@@ -776,3 +776,30 @@ set_fl(STDOUT_FILENO, O_SYNC);  // This causes each write to wait for the data t
     * We can’t set the **O_SYNC** flag when the file is opened, since the shell opened the file. 
     * With fcntl, we can modify the properties of a descriptor, knowing only the descriptor for the open file.
  
+## IOCTL FUNCTION
+
+```c
+#include<sys/ioctl.h>
+
+int ioctl(int fd, int request, ...);
+
+// Returns: –1 on error, something else if OK
+```
+
+* In this prototype, we show only the headers required for the function itself. 
+    * Normally, additional device-specific headers are required. 
+    * For example, the ioctl commands for terminal I/O, beyond the basic operations specified by POSIX.1, all require the <termios.h> header.
+
+* Each device driver can define its own set of ioctl commands. 
+    * The system, however, provides generic ioctl commands for different classes of devices. 
+
+* Common FreeBSD ioctl operations
+    
+    ![](img/10.jpg)
+    
+* The mag tape operations allow us to write end-of-file marks on a tape, rewind a tape, space forward over a specified number of files or records, and the like. 
+* e. None of these operations is easily expressed in terms of the other functions in the chapter (read, write, lseek, and so on), so the easiest way to handle these devices has always been to access their operations using ioctl.
+
+* We use the ioctl function in Section 18 to fetch and set the size of a terminal’s window, and in Section 19 when we access the advanced features of pseudo terminals.
+
+
