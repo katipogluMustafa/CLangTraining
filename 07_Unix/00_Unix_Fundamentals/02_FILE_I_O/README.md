@@ -467,5 +467,76 @@ main(void)
     * To see how to avoid some surprises, we need to understand the concept of **atomic operations**.    
     
 ## ATOMIC OPERATIONS    
+   
+* Assume that two independent processes, A and B, are appending to the same file. 
+    * Each has opened the file but without the O_APPEND flag. 
+    * Each process has its own file table entry, but they share a single v-node table entry. 
+    * Assume that process A does the lseek and that this sets the current offset for the file for process A to byte offset 1,500 (the current end of file). 
+    * Then the kernel switches processes, and B continues running. Process B then does the lseek, which sets the current offset for the file for process B to byte offset 1,500 also (the current end of file). 
+    * Then B calls write, which increments B’s current file offset for the file to 1,600. 
+    * Because the file’s size has been extended, the kernel also updates the current file size in the v-node to 1,600. 
+    * Then the kernel switches processes and A resumes. When A calls write, the data is written starting at the current file offset for A, which is byte offset 1,500. 
+    * **This overwrites the data that B wrote to the file.**
+
+* The problem here is that our logical operation of “**position to the end of file and write**” requires two separate function calls     
+    * The solution is to have the positioning to the current end of file and the write be an atomic operation with regard to other processes.
+
+> <i>**Any operation that requires more than one function call cannot be atomic, as there is always the possibility that the kernel might temporarily suspend the process between the two function calls**</i>
+
+* The UNIX System provides an atomic way to do this operation if we set the **O_APPEND** flag when a file is opened.
+    * This causes the kernel to position the file to its current end of file **before each write**. 
+    * We no longer have to call lseek before each write.
+
+### pread and pwrite Functions
+
+The Single UNIX Specification includes two functions that allow applications to seek and perform I/O atomically: pread and pwrite.
+
+```c
+#include<unistd.h>
+
+ssize_t pread(int fd, void* buf, size_t nbytes, off_t offset);
+// Returns: number of bytes read, 0 if end of file, –1 on error
+
+ssize_t pwrite(int fd, const void* buf, size_t nbytes, off_t offset);
+// Returns: number of bytes written if OK, –1 on error
+```
+
+* Calling pread is equivalent to calling lseek followed by a call to read, with the following exceptions.
     
+    * There is no way to interrupt the two operations that occur when we call pread.
     
+    * The current file offset is not updated.
+
+* Calling pwrite is equivalent to calling lseek followed by a call to write, with similar exceptions.
+
+
+### Creating a File
+
+* We saw another example of an atomic operation when we described the **O_CREAT** and **O_EXCL** options for the open function. 
+    * When both of these options are specified, the open will fail if the file already exists. 
+    * We also said that the check for the existence of the file and the creation of the file was performed as an atomic operation. 
+    * If we didn’t have this atomic operation, we might try
+
+```c
+if ((fd = open(path, O_WRONLY)) < 0) {
+    if (errno == ENOENT) {
+        if ((fd = creat(path, mode)) < 0)
+            err_sys("creat error");
+    } else {
+        err_sys("open error");
+    }
+}
+```
+
+* The problem occurs if the file is created by another process between the open and the creat. 
+    * If the file is created by another process between these two function calls, and if that other process writes something to the file, that data is erased when this creat is executed. 
+    * Combining the test for existence and the creation into a single atomic operation avoids this problem.
+
+> <i>In general, the term atomic operation refers to an operation that might be composed of multiple steps. </i>
+
+* If the operation is performed atomically, either all the steps are performed (on success) or none are performed (on failure). 
+    * It must not be possible for only a subset of the steps to be performed. 
+    * We’ll return to the topic of atomic operations when we describe the link function and record locking
+    * See unit 04 and 14.
+    
+
