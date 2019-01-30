@@ -539,4 +539,68 @@ if ((fd = open(path, O_WRONLY)) < 0) {
     * We’ll return to the topic of atomic operations when we describe the link function and record locking
     * See unit 04 and 14.
     
+## DUP AND DUP2 FUNCTIONS
+
+An existing file descriptor is duplicated by either of the following functions:
+
+```c
+#include<unistd.h>
+
+int dup(int fd);
+
+int dup2(int fd, int fd2);              
+int dup2(int fd_Dest, int fd_Source);       // same but easy to remmeber, assembly style
+
+// Both return: new file descriptor if OK, –1 on error
+```
+
+* The new file descriptor returned by dup is guaranteed to be the lowest-numbered available file descriptor.
+
+* With dup2, we specify the value of the new descriptor with the fd2 argument. 
+    * If fd2 is already open, it is first closed. 
+    * If fd equals fd2, then dup2 returns fd2 without closing it. 
+    * Otherwise, the **FD_CLOEXEC** file descriptor flag is cleared for fd2, so that fd2 is left open if the process calls exec.
+
+---
+
+```c
+newfd = dup(1);
+```
+
+![](img/7.jpg)
+* The new file descriptor that is returned as the value of the functions shares the same file table entry as the fd argument.
+*  Because both descriptors point to the same file table entry, they share the same file status flags—read, write, append, and so on—and the same current file offset.
+
+---
+
+* Each descriptor has its own set of file descriptor flags. 
+    * The close-on-exec file descriptor flag for the new descriptor is always cleared by the dup functions.(see fcntl section)
+
+* Another way to duplicate a descriptor is with the fcntl function
+
+```c
+// Indeed, the call
+dup(fd);
+
+//is equivalent to
+fcntl(fd, F_DUPFD, 0);
+
+// Similarly, the call
+dup2(fd, fd2);
+
+// is equivalent to
+close(fd2);
+fcntl(fd, F_DUPFD,fd2);
+```    
+
+* In this last case, the dup2 is not exactly the same as a close followed by an fcntl. The differences are as follows:
+
+1. dup2 is an atomic operation, whereas the alternate form involves two function calls. 
+    
+    * It is possible in the latter case to have a signal catcher called between the close and the fcntl that could modify the file descriptors.
+    * The same problem could occur if a different thread changes the file descriptors.
+    
+2. There are some errno differences between dup2 and fcntl.
+
+    * POSIX.1 requires both dup2 and the F_DUPFD feature of fcntl.
 
