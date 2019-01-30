@@ -603,4 +603,176 @@ fcntl(fd, F_DUPFD,fd2);
 2. There are some errno differences between dup2 and fcntl.
 
     * POSIX.1 requires both dup2 and the F_DUPFD feature of fcntl.
+    
+## SYNC, FSYNC, AND FDATASYNC FUNCTIONS
 
+* Traditional implementations of the UNIX System have a buffer cache or page cache in the kernel through which most disk I/O passes.
+    * When we write data to a file, the data is normally copied by the kernel into one of its buffers and queued for writing to disk at some later time. 
+    * This is called **delayed write**.
+
+* The kernel eventually writes all the delayed-write blocks to disk, normally when it needs to reuse the buffer for some other disk block. 
+    * **To ensure consistency** of the file system on disk with the contents of the buffer cache, the sync, fsync, and fdatasync functions are provided.
+
+```c
+#include<unistd.h>
+
+int fsync(int fd);
+int fdatasync(int fd);
+
+// Returns: 0 if OK, –1 on error
+
+void sync(void);
+```
+
+* The sync function simply queues all the modified block buffers for writing and returns; it does not wait for the disk writes to take place.
+
+* The function sync is normally called periodically (usually every 30 seconds) from a system daemon, often called update. 
+    * This guarantees regular flushing of the kernel’s block buffers. 
+
+* The command sync also calls the sync function.
+
+* The function fsync refers only to a single file, specified by the file descriptor fd, and **waits for the disk writes to complete** before returning. 
+    * This function is used when an application, such as a database, needs to be sure that the modified blocks have been written to the disk.
+
+* The fdatasync function is similar to fsync, but it affects only the data portions of a file. With fsync, the file’s attributes are also updated synchronously.
+
+## FCNTL FUNCTION
+
+The fcntl function can change the properties of a file that is already open.
+
+```c
+#include<fcntl.h>
+
+int fcntl(int fd, int cmd,  .../* int arg*/);
+
+// Returns: depends on cmd if OK (see following), –1 on error
+```
+    
+* The fcntl function is used for five different purposes.
+
+1. Duplicate an existing descriptor (cmd = F_DUPFD or F_DUPFD_CLOEXEC)
+2. Get/set file descriptor flags (cmd = F_GETFD or F_SETFD)
+3. Get/set file status flags (cmd = F_GETFL or F_SETFL) 
+4. Get/set asynchronous I/O ownership (cmd = F_GETOWN or F_SETOWN)
+5. Get/set record locks (cmd = F_GETLK, F_SETLK, or F_SETLKW)
+
+---
+
+--> F_DUPFD
+
+ * Duplicate the file descriptor fd. 
+ * The new file descriptor is returned as the value of the function. 
+ * It is the lowest-numbered descriptor that is not already open, and that is greater than or equal to the third argument (taken as an integer).The new descriptor shares the same file table entry as fd.
+ *  But the new descriptor has its own set of file descriptor flags, and its FD_CLOEXEC(close on exec) file descriptor flag is cleared.
+ 
+
+--> F_DUPFD_CLOEXEC
+
+ * Duplicate the file descriptor and set the FD_CLOEXEC file descriptor flag associated with the new descriptor. 
+ * Returns the new file descriptor.
+ 
+
+-->  F_GETFD
+ * Return the file descriptor flags for fd as the value of the function.
+    * Currently, only one file descriptor flag is defined: the FD_CLOEXEC flag.
+
+--> F_SETFD
+* Set the file descriptor flags for fd. The new flag value is set from the third argument (taken as an integer).
+* Be aware that some existing programs that deal with the file descriptor flags don’t use the constant FD_CLOEXEC. 
+    * Instead, these programs set the flag to either 0 (don’t close-on-exec, the default) or 1 (do close-on-exec). 
+
+--> F_GETFL
+* Return the file status flags for fd as the value of the function.
+
+* File status flags for fcntl
+    
+    ![](img/8.jpg)
+
+* Unfortunately, the five access-mode flags—O_RDONLY, O_WRONLY, O_RDWR, O_EXEC, and O_SEARCH—are not separate bits that can be tested. 
+    * We must first use the O_ACCMODE mask to obtain the access-mode bits and then compare the result against any of the five values.
+
+--> F_SETFL
+* Set the file status flags to the value of the third argument (taken as an integer). 
+* The only flags that can be changed are 
+    * O_APPEND 
+    * O_NONBLOCK 
+    * O_SYNC
+    * O_DSYNC 
+    * O_RSYNC 
+    * O_FSYNC 
+    * O_ASYNC
+
+--> F_GETOWN
+* Get the process ID or process group ID currently receiving the SIGIO and SIGURG signals.
+
+--> F_SETOWN
+* Set the process ID or process group ID to receive the SIGIO and SIGURG signals. 
+* A positive arg specifies a process ID. A negative arg implies a process group ID equal to the absolute value of arg.
+
+---
+
+
+* The return value from fcntl depends on the command.
+    * All commands return **–1 on an error** or **some other value if OK**.
+
+* The following four commands have special return values: 
+    * F_DUPFD, returns the new file descriptor
+    * F_GETFD, F_GETFL return the corresponding flags
+    * F_GETOWN returns a positive process ID or a negative process group ID.
+
+* When we modify either the file descriptor flags or the file status flags, we must be careful to fetch the existing flag value, modify it as desired, and then set the new flag value. 
+    * We can’t simply issue an F_SETFD or an F_SETFL command, as this could turn off flag bits that were previously set.
+
+```c
+/* Turn on one or more of the file status flags for a descriptor */
+
+#include "apue.h"
+#include <fcntl.h>
+
+void
+set_fl(int fd, int flags) /* flags are file status flags to turn on */
+{
+    int     val;
+
+    if ((val = fcntl(fd, F_GETFL, 0)) < 0)
+        err_sys("fcntl F_GETFL error");
+
+    val |= flags;       /* turn on flags */
+
+    if (fcntl(fd, F_SETFL, val) < 0)
+        err_sys("fcntl F_SETFL error");
+}
+```
+
+* If we change the middle statement to
+```c
+val &= ~flags;  /* turn flags off */
+```
+---
+
+```c
+set_fl(STDOUT_FILENO, O_SYNC);  // This causes each write to wait for the data to be written to disk before returning. 
+```
+
+* We expect the O_SYNC flag to increase the system and clock times when the program runs. 
+    
+    * Linux ext4 timing results using various synchronization mechanisms
+        * The six rows in Figure were all measured with a BUFFSIZE of 4,096 bytes.
+        
+        ![Linux ext4 timing results using various synchronization mechanisms](img/9.jpg)
+
+* The results in Figure 3.6 were measured while reading a disk file and writing to /dev/null, so there was no disk output. 
+    * The second row in Figure 3.13 corresponds to reading a disk file and writing to another disk file. 
+    * When we enable synchronous writes, the system and clock times should increase significantly. 
+        * As the third row shows, the system time for writing synchronously is not much more expensive than when we used delayed writes. 
+        * This implies that the Linux operating system is doing the same amount of work for delayed and synchronous writes (which is unlikely), or else the O_SYNC flag isn’t having the desired effect. 
+        * In this case, the Linux operating system isn’t allowing us to set the O_SYNC flag using fcntl, instead failing without returning an error (but it would have honored the flag if we were able to specify it when the file was opened).
+    * The clock time in the last three rows reflects the extra time needed to wait for all of the writes to be committed to disk. 
+        * After writing a file synchronously, we expect that a call to fsync will have no effect. 
+        * This case is supposed to be represented by the last row in Figure 3.13, but since the O_SYNC flag isn’t having the intended effect, the last row behaves the same way as the fifth row.
+
+* With this example, we see the need for fcntl. 
+    * Our program operates on a descriptor (standard output), never knowing the name of the file that was opened on that descriptor. 
+    * We can’t set the **O_SYNC** flag when the file is opened, since the shell opened the file. 
+    * With fcntl, we can modify the properties of a descriptor, knowing only the descriptor for the open file.
+ 
