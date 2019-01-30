@@ -441,3 +441,31 @@ main(void)
     
     * Although the implementations differ, the v-node is conceptually the same as a generic i-node. Both point to an i-node structure specific to the file system.
 
+  * Instead of splitting the data structures into a v-node and an i-node, Linux uses a file system–independent i-node and a file system–dependent i-node.
+  
+  * Two independent processes with the same file open
+  
+    ![](img/6.jpg)
+  * Given these data structures, we now need to be more specific about what happens with certain operations that we’ve already described.
+    
+    * After each write is complete, the current file offset in the file table entry is incremented by the number of bytes written. If this causes the current file offset to exceed the current file size, the current file size in the i-node table entry is set to the current file offset (for example, the file is extended).
+    
+    *  If a file is opened with the **O_APPEND** flag, a corresponding flag is set in the file status flags of the file table entry. Each time a write is performed for a file with this append flag set, the current file offset in the file table entry is first set to the current file size from the i-node table entry. This forces every write to be appended to the current end of file.
+    
+    * If a file is positioned to its current end of file using lseek, all that happens is the current file offset in the file table entry is set to the current file size from the i-node table entry. (Note that this is not the same as if the file was opened with the O_APPEND flag, as we will see...
+    
+    * The lseek function modifies only the current file offset in the file table entry. No I/O takes place.
+    
+    * It is possible for more than one file descriptor entry to point to the same file table entry(dup function).
+        * This also happens after a fork when the parent and the child share the same file table entry for each open descriptor
+    
+    * Note the difference in scope between the file descriptor flags and the file status flags. The former apply only to a single descriptor in a single process, whereas the latter apply to all descriptors in any process that point to the given file table entry.
+
+* Everything that we’ve described so far in this section works fine for **multiple processes** that are **reading the same file**. 
+    * Each process has its own file table entry with its own current file offset. 
+    * Unexpected results can arise, however, when **multiple processes write to the same file**. 
+    * To see how to avoid some surprises, we need to understand the concept of **atomic operations**.    
+    
+## ATOMIC OPERATIONS    
+    
+    
