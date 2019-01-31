@@ -441,3 +441,403 @@ main(void)
     
     * Although the implementations differ, the v-node is conceptually the same as a generic i-node. Both point to an i-node structure specific to the file system.
 
+  * Instead of splitting the data structures into a v-node and an i-node, Linux uses a file system–independent i-node and a file system–dependent i-node.
+  
+  * Two independent processes with the same file open
+  
+    ![](img/6.jpg)
+  * Given these data structures, we now need to be more specific about what happens with certain operations that we’ve already described.
+    
+    * After each write is complete, the current file offset in the file table entry is incremented by the number of bytes written. If this causes the current file offset to exceed the current file size, the current file size in the i-node table entry is set to the current file offset (for example, the file is extended).
+    
+    *  If a file is opened with the **O_APPEND** flag, a corresponding flag is set in the file status flags of the file table entry. Each time a write is performed for a file with this append flag set, the current file offset in the file table entry is first set to the current file size from the i-node table entry. This forces every write to be appended to the current end of file.
+    
+    * If a file is positioned to its current end of file using lseek, all that happens is the current file offset in the file table entry is set to the current file size from the i-node table entry. (Note that this is not the same as if the file was opened with the O_APPEND flag, as we will see...
+    
+    * The lseek function modifies only the current file offset in the file table entry. No I/O takes place.
+    
+    * It is possible for more than one file descriptor entry to point to the same file table entry(dup function).
+        * This also happens after a fork when the parent and the child share the same file table entry for each open descriptor
+    
+    * Note the difference in scope between the file descriptor flags and the file status flags. The former apply only to a single descriptor in a single process, whereas the latter apply to all descriptors in any process that point to the given file table entry.
+
+* Everything that we’ve described so far in this section works fine for **multiple processes** that are **reading the same file**. 
+    * Each process has its own file table entry with its own current file offset. 
+    * Unexpected results can arise, however, when **multiple processes write to the same file**. 
+    * To see how to avoid some surprises, we need to understand the concept of **atomic operations**.    
+    
+## ATOMIC OPERATIONS    
+   
+* Assume that two independent processes, A and B, are appending to the same file. 
+    * Each has opened the file but without the O_APPEND flag. 
+    * Each process has its own file table entry, but they share a single v-node table entry. 
+    * Assume that process A does the lseek and that this sets the current offset for the file for process A to byte offset 1,500 (the current end of file). 
+    * Then the kernel switches processes, and B continues running. Process B then does the lseek, which sets the current offset for the file for process B to byte offset 1,500 also (the current end of file). 
+    * Then B calls write, which increments B’s current file offset for the file to 1,600. 
+    * Because the file’s size has been extended, the kernel also updates the current file size in the v-node to 1,600. 
+    * Then the kernel switches processes and A resumes. When A calls write, the data is written starting at the current file offset for A, which is byte offset 1,500. 
+    * **This overwrites the data that B wrote to the file.**
+
+* The problem here is that our logical operation of “**position to the end of file and write**” requires two separate function calls     
+    * The solution is to have the positioning to the current end of file and the write be an atomic operation with regard to other processes.
+
+> <i>**Any operation that requires more than one function call cannot be atomic, as there is always the possibility that the kernel might temporarily suspend the process between the two function calls**</i>
+
+* The UNIX System provides an atomic way to do this operation if we set the **O_APPEND** flag when a file is opened.
+    * This causes the kernel to position the file to its current end of file **before each write**. 
+    * We no longer have to call lseek before each write.
+
+### pread and pwrite Functions
+
+The Single UNIX Specification includes two functions that allow applications to seek and perform I/O atomically: pread and pwrite.
+
+```c
+#include<unistd.h>
+
+ssize_t pread(int fd, void* buf, size_t nbytes, off_t offset);
+// Returns: number of bytes read, 0 if end of file, –1 on error
+
+ssize_t pwrite(int fd, const void* buf, size_t nbytes, off_t offset);
+// Returns: number of bytes written if OK, –1 on error
+```
+
+* Calling pread is equivalent to calling lseek followed by a call to read, with the following exceptions.
+    
+    * There is no way to interrupt the two operations that occur when we call pread.
+    
+    * The current file offset is not updated.
+
+* Calling pwrite is equivalent to calling lseek followed by a call to write, with similar exceptions.
+
+
+### Creating a File
+
+* We saw another example of an atomic operation when we described the **O_CREAT** and **O_EXCL** options for the open function. 
+    * When both of these options are specified, the open will fail if the file already exists. 
+    * We also said that the check for the existence of the file and the creation of the file was performed as an atomic operation. 
+    * If we didn’t have this atomic operation, we might try
+
+```c
+if ((fd = open(path, O_WRONLY)) < 0) {
+    if (errno == ENOENT) {
+        if ((fd = creat(path, mode)) < 0)
+            err_sys("creat error");
+    } else {
+        err_sys("open error");
+    }
+}
+```
+
+* The problem occurs if the file is created by another process between the open and the creat. 
+    * If the file is created by another process between these two function calls, and if that other process writes something to the file, that data is erased when this creat is executed. 
+    * Combining the test for existence and the creation into a single atomic operation avoids this problem.
+
+> <i>In general, the term atomic operation refers to an operation that might be composed of multiple steps. </i>
+
+* If the operation is performed atomically, either all the steps are performed (on success) or none are performed (on failure). 
+    * It must not be possible for only a subset of the steps to be performed. 
+    * We’ll return to the topic of atomic operations when we describe the link function and record locking
+    * See unit 04 and 14.
+    
+## DUP AND DUP2 FUNCTIONS
+
+An existing file descriptor is duplicated by either of the following functions:
+
+```c
+#include<unistd.h>
+
+int dup(int fd);
+
+int dup2(int fd, int fd2);              
+int dup2(int fd_Dest, int fd_Source);       // same but easy to remmeber, assembly style
+
+// Both return: new file descriptor if OK, –1 on error
+```
+
+* The new file descriptor returned by dup is guaranteed to be the lowest-numbered available file descriptor.
+
+* With dup2, we specify the value of the new descriptor with the fd2 argument. 
+    * If fd2 is already open, it is first closed. 
+    * If fd equals fd2, then dup2 returns fd2 without closing it. 
+    * Otherwise, the **FD_CLOEXEC** file descriptor flag is cleared for fd2, so that fd2 is left open if the process calls exec.
+
+---
+
+```c
+newfd = dup(1);
+```
+
+![](img/7.jpg)
+* The new file descriptor that is returned as the value of the functions shares the same file table entry as the fd argument.
+*  Because both descriptors point to the same file table entry, they share the same file status flags—read, write, append, and so on—and the same current file offset.
+
+---
+
+* Each descriptor has its own set of file descriptor flags. 
+    * The close-on-exec file descriptor flag for the new descriptor is always cleared by the dup functions.(see fcntl section)
+
+* Another way to duplicate a descriptor is with the fcntl function
+
+```c
+// Indeed, the call
+dup(fd);
+
+//is equivalent to
+fcntl(fd, F_DUPFD, 0);
+
+// Similarly, the call
+dup2(fd, fd2);
+
+// is equivalent to
+close(fd2);
+fcntl(fd, F_DUPFD,fd2);
+```    
+
+* In this last case, the dup2 is not exactly the same as a close followed by an fcntl. The differences are as follows:
+
+1. dup2 is an atomic operation, whereas the alternate form involves two function calls. 
+    
+    * It is possible in the latter case to have a signal catcher called between the close and the fcntl that could modify the file descriptors.
+    * The same problem could occur if a different thread changes the file descriptors.
+    
+2. There are some errno differences between dup2 and fcntl.
+
+    * POSIX.1 requires both dup2 and the F_DUPFD feature of fcntl.
+    
+## SYNC, FSYNC, AND FDATASYNC FUNCTIONS
+
+* Traditional implementations of the UNIX System have a buffer cache or page cache in the kernel through which most disk I/O passes.
+    * When we write data to a file, the data is normally copied by the kernel into one of its buffers and queued for writing to disk at some later time. 
+    * This is called **delayed write**.
+
+* The kernel eventually writes all the delayed-write blocks to disk, normally when it needs to reuse the buffer for some other disk block. 
+    * **To ensure consistency** of the file system on disk with the contents of the buffer cache, the sync, fsync, and fdatasync functions are provided.
+
+```c
+#include<unistd.h>
+
+int fsync(int fd);
+int fdatasync(int fd);
+
+// Returns: 0 if OK, –1 on error
+
+void sync(void);
+```
+
+* The sync function simply queues all the modified block buffers for writing and returns; it does not wait for the disk writes to take place.
+
+* The function sync is normally called periodically (usually every 30 seconds) from a system daemon, often called update. 
+    * This guarantees regular flushing of the kernel’s block buffers. 
+
+* The command sync also calls the sync function.
+
+* The function fsync refers only to a single file, specified by the file descriptor fd, and **waits for the disk writes to complete** before returning. 
+    * This function is used when an application, such as a database, needs to be sure that the modified blocks have been written to the disk.
+
+* The fdatasync function is similar to fsync, but it affects only the data portions of a file. With fsync, the file’s attributes are also updated synchronously.
+
+## FCNTL FUNCTION
+
+The fcntl function can change the properties of a file that is already open.
+
+```c
+#include<fcntl.h>
+
+int fcntl(int fd, int cmd,  .../* int arg*/);
+
+// Returns: depends on cmd if OK (see following), –1 on error
+```
+    
+* The fcntl function is used for five different purposes.
+
+1. Duplicate an existing descriptor (cmd = F_DUPFD or F_DUPFD_CLOEXEC)
+2. Get/set file descriptor flags (cmd = F_GETFD or F_SETFD)
+3. Get/set file status flags (cmd = F_GETFL or F_SETFL) 
+4. Get/set asynchronous I/O ownership (cmd = F_GETOWN or F_SETOWN)
+5. Get/set record locks (cmd = F_GETLK, F_SETLK, or F_SETLKW)
+
+---
+
+--> F_DUPFD
+
+ * Duplicate the file descriptor fd. 
+ * The new file descriptor is returned as the value of the function. 
+ * It is the lowest-numbered descriptor that is not already open, and that is greater than or equal to the third argument (taken as an integer).The new descriptor shares the same file table entry as fd.
+ *  But the new descriptor has its own set of file descriptor flags, and its FD_CLOEXEC(close on exec) file descriptor flag is cleared.
+ 
+
+--> F_DUPFD_CLOEXEC
+
+ * Duplicate the file descriptor and set the FD_CLOEXEC file descriptor flag associated with the new descriptor. 
+ * Returns the new file descriptor.
+ 
+
+-->  F_GETFD
+ * Return the file descriptor flags for fd as the value of the function.
+    * Currently, only one file descriptor flag is defined: the FD_CLOEXEC flag.
+
+--> F_SETFD
+* Set the file descriptor flags for fd. The new flag value is set from the third argument (taken as an integer).
+* Be aware that some existing programs that deal with the file descriptor flags don’t use the constant FD_CLOEXEC. 
+    * Instead, these programs set the flag to either 0 (don’t close-on-exec, the default) or 1 (do close-on-exec). 
+
+--> F_GETFL
+* Return the file status flags for fd as the value of the function.
+
+* File status flags for fcntl
+    
+    ![](img/8.jpg)
+
+* Unfortunately, the five access-mode flags—O_RDONLY, O_WRONLY, O_RDWR, O_EXEC, and O_SEARCH—are not separate bits that can be tested. 
+    * We must first use the O_ACCMODE mask to obtain the access-mode bits and then compare the result against any of the five values.
+
+--> F_SETFL
+* Set the file status flags to the value of the third argument (taken as an integer). 
+* The only flags that can be changed are 
+    * O_APPEND 
+    * O_NONBLOCK 
+    * O_SYNC
+    * O_DSYNC 
+    * O_RSYNC 
+    * O_FSYNC 
+    * O_ASYNC
+
+--> F_GETOWN
+* Get the process ID or process group ID currently receiving the SIGIO and SIGURG signals.
+
+--> F_SETOWN
+* Set the process ID or process group ID to receive the SIGIO and SIGURG signals. 
+* A positive arg specifies a process ID. A negative arg implies a process group ID equal to the absolute value of arg.
+
+---
+
+
+* The return value from fcntl depends on the command.
+    * All commands return **–1 on an error** or **some other value if OK**.
+
+* The following four commands have special return values: 
+    * F_DUPFD, returns the new file descriptor
+    * F_GETFD, F_GETFL return the corresponding flags
+    * F_GETOWN returns a positive process ID or a negative process group ID.
+
+* When we modify either the file descriptor flags or the file status flags, we must be careful to fetch the existing flag value, modify it as desired, and then set the new flag value. 
+    * We can’t simply issue an F_SETFD or an F_SETFL command, as this could turn off flag bits that were previously set.
+
+```c
+/* Turn on one or more of the file status flags for a descriptor */
+
+#include "apue.h"
+#include <fcntl.h>
+
+void
+set_fl(int fd, int flags) /* flags are file status flags to turn on */
+{
+    int     val;
+
+    if ((val = fcntl(fd, F_GETFL, 0)) < 0)
+        err_sys("fcntl F_GETFL error");
+
+    val |= flags;       /* turn on flags */
+
+    if (fcntl(fd, F_SETFL, val) < 0)
+        err_sys("fcntl F_SETFL error");
+}
+```
+
+* If we change the middle statement to
+```c
+val &= ~flags;  /* turn flags off */
+```
+---
+
+```c
+set_fl(STDOUT_FILENO, O_SYNC);  // This causes each write to wait for the data to be written to disk before returning. 
+```
+
+* We expect the O_SYNC flag to increase the system and clock times when the program runs. 
+    
+    * Linux ext4 timing results using various synchronization mechanisms
+        * The six rows in Figure were all measured with a BUFFSIZE of 4,096 bytes.
+        
+        ![Linux ext4 timing results using various synchronization mechanisms](img/9.jpg)
+
+* The results in Figure 3.6 were measured while reading a disk file and writing to /dev/null, so there was no disk output. 
+    * The second row in Figure 3.13 corresponds to reading a disk file and writing to another disk file. 
+    * When we enable synchronous writes, the system and clock times should increase significantly. 
+        * As the third row shows, the system time for writing synchronously is not much more expensive than when we used delayed writes. 
+        * This implies that the Linux operating system is doing the same amount of work for delayed and synchronous writes (which is unlikely), or else the O_SYNC flag isn’t having the desired effect. 
+        * In this case, the Linux operating system isn’t allowing us to set the O_SYNC flag using fcntl, instead failing without returning an error (but it would have honored the flag if we were able to specify it when the file was opened).
+    * The clock time in the last three rows reflects the extra time needed to wait for all of the writes to be committed to disk. 
+        * After writing a file synchronously, we expect that a call to fsync will have no effect. 
+        * This case is supposed to be represented by the last row in Figure 3.13, but since the O_SYNC flag isn’t having the intended effect, the last row behaves the same way as the fifth row.
+
+* With this example, we see the need for fcntl. 
+    * Our program operates on a descriptor (standard output), never knowing the name of the file that was opened on that descriptor. 
+    * We can’t set the **O_SYNC** flag when the file is opened, since the shell opened the file. 
+    * With fcntl, we can modify the properties of a descriptor, knowing only the descriptor for the open file.
+ 
+## IOCTL FUNCTION
+
+```c
+#include<sys/ioctl.h>
+
+int ioctl(int fd, int request, ...);
+
+// Returns: –1 on error, something else if OK
+```
+
+* In this prototype, we show only the headers required for the function itself. 
+    * Normally, additional device-specific headers are required. 
+    * For example, the ioctl commands for terminal I/O, beyond the basic operations specified by POSIX.1, all require the <termios.h> header.
+
+* Each device driver can define its own set of ioctl commands. 
+    * The system, however, provides generic ioctl commands for different classes of devices. 
+
+* Common FreeBSD ioctl operations
+    
+    ![](img/10.jpg)
+    
+* The mag tape operations allow us to write end-of-file marks on a tape, rewind a tape, space forward over a specified number of files or records, and the like. 
+* e. None of these operations is easily expressed in terms of the other functions in the chapter (read, write, lseek, and so on), so the easiest way to handle these devices has always been to access their operations using ioctl.
+
+* We use the ioctl function in Section 18 to fetch and set the size of a terminal’s window, and in Section 19 when we access the advanced features of pseudo terminals.
+
+## /dev/fd
+
+Newer systems provide a directory named /dev/fd whose entries are files named0, 1,2, and so on.Opening the file /dev/fd/n is equivalent to duplicating descriptor n, assuming that descriptor n is open.
+
+```c
+fd = open("/dev/fd/0", mode); // most systems ignore the specified mode, whereas others require that it be a subset of the mode used when the referenced file (standard input, in this case) was originally opened. 
+// is equivalent to
+fd = dup(0); 
+```
+
+* Because the previous open is equivalent to `fd = dup(0)` the descriptors 0 and fd share the same file table entry.
+* For example, if descriptor 0 was opened read-only, we can only read on fd. Even if the system ignores the open mode and the call succeeds, we still can’t write to fd.
+    ```c
+    fd = open("/dev/fd/0", O_RDWR);
+    ```
+
+* The Linux implementation of /dev/fd is an exception. 
+    * It maps file descriptors into symbolic links pointing to the underlying physical files. 
+    * When you open /dev/fd/0, for example, you are really opening the file associated with your standard input. 
+    * Thus the mode of the new file descriptor returned is unrelated to the mode of the /dev/fd file descriptor.
+
+* We can also call creat with a /dev/fd pathname argument as well as specify O_CREAT in a call to open. This allows a program that calls creat to still work if the pathname argument is /dev/fd/1, for example.
+    * Beware of doing this on Linux. 
+    * Because the Linux implementation uses symbolic links to the real files, using creat on a /dev/fd file will result in the underlying file being truncated.
+    
+* Some systems provide the pathnames /dev/stdin, /dev/stdout, and /dev/stderr. These pathnames are equivalent to /dev/fd/0, /dev/fd/1, and /dev/fd/2, respectively.
+
+* The main use of the /dev/fd files is from the shell. It allows programs that use pathname arguments to handle standard input and standard output in the same manner as other pathnames. 
+    ```bash
+    filter file2 | cat file1 - file3 | lpr
+    ```
+    * First, cat reads file1, then its standard input (the output of the filter program on file2), and then file3. If /dev/fd is supported, the special handling of - can be removed from cat, and we can enter
+    
+    ```bash
+    filter file2 | cat file1 /dev/fd/0 file3 | lpr
+    ```
+    * The special meaning of - as a command-line argument to refer to the standard input or the standard output is a kludge that has crept into many programs. 
+    * There are also problems if we specify - as the first file, as it looks like the start of another command-line option. 
+    * Using /dev/fd is a step toward uniformity and cleanliness.
