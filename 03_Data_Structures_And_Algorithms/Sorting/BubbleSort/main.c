@@ -1,6 +1,5 @@
 #include<stdio.h>
 
-/* Takes Inputs from Command Line*/ 
 
 void swap(int* x, int* y){
 
@@ -37,7 +36,6 @@ int main(int argc, char* args[]){
        int A[5] = {8,3,4,2,5};
        BubbleSort(A, 5);
        printArr(A,5);
-
 
 return 0;
 }
