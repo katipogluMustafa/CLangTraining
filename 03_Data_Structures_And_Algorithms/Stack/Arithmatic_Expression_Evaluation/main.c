@@ -43,7 +43,7 @@ return 0;
  */
 
 int calculateExpression(char* in){
- char* temp = malloc( strlen(in) * sizeof(char) );
+ char* temp = malloc( ( strlen(in) + 1) * sizeof(char) );
   strcpy(temp, in);
   int n = 0;
   boolean takingNumber = false;
@@ -61,11 +61,12 @@ int calculateExpression(char* in){
          takingNumber = true;
        }else{
          
-         if( isOperator(*temp) == true && takingNumber == true){
-           // if found operator when taking number, then we finished getting number
-           push(operandStack, &n);
-           takingNumber = false;
-           
+         if( isOperator(*temp) == true){
+           if( takingNumber == true ){
+             // if found operator when taking number, then we finished getting number
+             push(operandStack, &n);
+             takingNumber = false;
+           }
            // Now we process the operator 
            if( processOperator(*temp) == false); 
              return INT_MIN;      // if error, return INT_MIN, else continue        
@@ -79,13 +80,16 @@ int calculateExpression(char* in){
       
 
      }else{
-        // We found the result, return the result
+        // We found the result, return the result after handling all the things left on the stack
+        while( isEmpty(operatorStack) != true )
+          if( handleOperation() != true )
+             return INT_MIN;                    // error while handling operation
         int out;
         // if Stacks are not empty after we popped result, then there is error
-        if( pop(operandStack, &out) && isEmpty(operandStack) && isEmpty(operandStack) )
+        if( pop(operandStack, &out) && isEmpty(operandStack)  )
            return out;
         else
-             return INT_MIN;
+           return INT_MIN;
         
      }
 
@@ -108,7 +112,7 @@ boolean processOperator(char x){
   // if closing parentheses
   else if( operator == ')' ){
     while( peek(operatorStack, &dummy) && dummy != '('){      
-       if( handleOperation() == false )                 // handles one operator from the stack
+       if( handleOperation() != true )                 // handles one operator from the stack
          return false;                                  // error while handling operation
     }
     if( dummy == '(')
@@ -119,7 +123,7 @@ boolean processOperator(char x){
   // if operator like + - * /
   else{
    do{        // loop through until we found place for operator in the stack
-    if( peek(operandStack, &dummy) ){
+    if( peek(operatorStack, &dummy) ){
          if( dummy == '('){
            push(operatorStack, &operator);
            flag = false;
@@ -130,11 +134,11 @@ boolean processOperator(char x){
          }
          else{
             // we just handle operation, check error and check the state in the next loop so no change for flag
-            if(handleOperation() == false)
+            if(handleOperation() != true)
               return false;                            // error while handling operation
          }        
        }else{                            // operand stack free, put the operator
-        push(operandStack, &operator);
+        push(operatorStack, &operator);
         flag = false;
         }
     }while(flag);
@@ -184,7 +188,14 @@ boolean handleOperation(){
  * @param y operand
  */
 boolean isLowerPrecedence(char x, char y){
-  if( (x == '+' || x == '-') && (y == '*' || y == '/' || y == '(' ) )
+  if( x == y)
+    return false;
+  else if( (x == '+' && y == '-') || (x == '-' && y == '+') )
+    return false;
+  else if( (x == '/' && y == '*') || (x == '*' && y == '/') )
+    return false;
+
+  else if( (x == '+' || x == '-') && (y == '*' || y == '/' || y == '(' ) )
     return true;
   else if( (x == '*' || x == '/') && (y == '(') )
     return true;
