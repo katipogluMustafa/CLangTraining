@@ -6,8 +6,7 @@ typedef int boolean;
 #define true  (1)
 #define false (0)
 
-// Same value as in stack.c
-#define MAX 100
+#define MAX 250
 
 typedef struct{
   int item[MAX];

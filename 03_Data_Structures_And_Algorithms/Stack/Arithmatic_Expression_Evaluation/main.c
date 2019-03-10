@@ -43,14 +43,12 @@ return 0;
  */
 
 int calculateExpression(char* in){
- char* temp = malloc( ( strlen(in) + 1) * sizeof(char) );
+  char* temp = malloc( ( strlen(in) + 1) * sizeof(char) );
   strcpy(temp, in);
   int n = 0;
   boolean takingNumber = false;
 
-  while( true ){
-     if(*temp != '\0'){
-  
+  while( *temp != '\0' ){
        if( takingNumber == false)
          n = 0;
    
@@ -77,26 +75,22 @@ int calculateExpression(char* in){
            return INT_MIN;
           
        }
-      
-
-     }else{
-        // We found the result, return the result after handling all the things left on the stack
-        while( isEmpty(operatorStack) != true )
-          if( handleOperation() != true )
-             return INT_MIN;                    // error while handling operation
-        int out;
-        // if Stacks are not empty after we popped result, then there is error
-        if( pop(operandStack, &out) && isEmpty(operandStack)  )
-           return out;
-        else
-           return INT_MIN;
-        
-     }
-
    temp++;
   }
 
-
+  if( *temp != '\0' ){
+    // We found the result, return the result after handling all the things left on the stack
+    while( isEmpty(operatorStack) != true )
+      if( handleOperation() != true )
+        return INT_MIN;                    // error while handling operation
+      int out;
+      // if Stacks are not empty after we popped result, then there is error
+      if( pop(operandStack, &out) && isEmpty(operandStack)  )
+         return out;
+      else
+         return INT_MIN;
+  }
+ 
 return INT_MIN;
 }
 
