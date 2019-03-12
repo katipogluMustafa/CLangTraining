@@ -63,6 +63,7 @@ int main() {
   printf("Matematiksel islem:\n");
   scanf("%[^\n]", s);
 
+  printf("\nAlgılanan islem: %s\n", s);
   int out = calculateExpression(s);
   
   /* If calculation returns INT_MIN this means there exists an error */
@@ -83,6 +84,7 @@ return 0;
 int calculateExpression(char* in) {
   char* temp = malloc( (strlen(in) + 1) * sizeof(char) );
   strcpy(temp, in);
+  printf("Temp = %s\n",temp);
   int n = 0; int out;
   boolean takingNumber = false;
 
@@ -95,6 +97,7 @@ int calculateExpression(char* in) {
 	n *= 10;
 	n += (*temp - '0');
 	takingNumber = true;
+        printf("Taking number... Current n : %d\n", n);
       }
       // Have we reached to the end of the given expression ? 
       else  if (*temp == '\0') {
@@ -104,6 +107,7 @@ int calculateExpression(char* in) {
 		takingNumber = false;
 	  }    
 
+          printf("Temp is NULL ending procedure is started...\n");
 	  // We found the result, return the result after handling all the things left on the stack
 	  while (isEmpty(operatorStack) != true)
               if (handleOperation() != true) {                          // Handles one operator from the stack
@@ -122,11 +126,15 @@ int calculateExpression(char* in) {
       else {
 	  if (isOperator(*temp) == true) {
 	    if (takingNumber == true) {
+              printf("We were taking number, lets push it\n");
 	      // if found operator when taking number, then we finished getting number
 	      push(operandStack, n);
 	      takingNumber = false;
 	    }
+            printf("Lets Process the operator\n");
 	    // Now we process the operator
+            printf("Processing the operator %c \n", *temp);
+
 	    if (processOperator(*temp) == false)
               return INT_MIN;      // if error, return INT_MIN, else continue        
 
@@ -137,14 +145,15 @@ int calculateExpression(char* in) {
       }
 
       if(takingNumber == false){
+        printf("Current Operator Stack: ");
+        printCharStack(operatorStack);
+        printf("\n");
         printf("Current Operand Stack: ");
         printIntStack(operandStack);
         printf("\n");
-        printf("Current Operator Stack: ");
-        printCharStack(operatorStack);
-        printf("\n\n");
       } 
               
+      printf("incrementing temp...\n");
   temp++;
   }
 
@@ -193,20 +202,25 @@ return true;
  */
 boolean handleOperator(int operator) {
   int dummy;
+  printf("Operator is one of the * - / + so we handleOperator\n");
 
   if ( peek(operatorStack, &dummy) ) {
+    printf("Operator %c (%d) exists at the top of the stack\n", (char)dummy, dummy);
   
       if (dummy == '(') {
+        printf("There exists ( inside stack so we push the new operator %c to the stack", operator);
   	push(operatorStack, operator);
         return true;
       }
   
       else if ( isOperator(dummy) && isLowerPrecedence((char)dummy, operator)) { // is dummy has lower precedence then operator
+        printf("%c has lower precedence than %c so we'll push it onto the stack\n", dummy, operator);
   	push(operatorStack, operator);
         return true;
       }
   
       else {
+        printf("At the top of the stack there is no ( and there is no operator lower precedence then %c so we handleOperation\n", operator);
   	// we just handle operation don't push the operator
   	handleOperation();
         return false;                            
@@ -214,6 +228,7 @@ boolean handleOperator(int operator) {
   
   }
   else if( isEmpty(operatorStack) ) {                            // operand stack free, put the operator
+      printf("Operator Stack is empty, lets push the first operator %c to the stack\n", operator);
       push(operatorStack, operator);
     return true;
   }
@@ -269,6 +284,7 @@ return true;
 boolean isLowerPrecedence(char x, char y) {
 
   if ( getPrecedence(x) < getPrecedence(y) ) {
+    printf("%c has lower precedence than %c", x, y);
     return true;
   }
  
@@ -379,9 +395,9 @@ boolean printIntStack(STACK* stack){
   if( isInitialized(stack) != true )
     return false;
 
-  int i = 0;
-  while( i != stack->top)
-    printf("%d ", stack->item[i++]);
+  int top = stack->top; 
+  while( top != 0)
+    printf("%d ", stack->item[--top]);
 
 return true;
 }
@@ -395,9 +411,10 @@ boolean printCharStack(STACK* stack){
   if( isInitialized(stack) != true )
     return false;
 
-  int i = 0;
-  while( i != stack->top)
-    printf("%c ", stack->item[i++]);
+
+  int top = stack->top; 
+  while( top != 0)
+    printf("%c ", stack->item[--top]);
 
 return true;
 }
@@ -480,6 +497,7 @@ boolean push(STACK* stack, int in) {
   stack->item[stack->top] = in;
   stack->top += 1;
         
+  printf("The number %d pushed to stack\n", in);
         
 	return true;
 }
@@ -499,6 +517,7 @@ boolean pop(STACK* stack, int* out) {
 
   stack->top -= 1;
   *out = stack->item[stack->top];
+  printf("The number %d popped out of stack\n", *out);
 
   return true;
 }
