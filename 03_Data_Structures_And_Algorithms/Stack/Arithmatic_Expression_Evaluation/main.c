@@ -233,8 +233,8 @@ boolean handleOperator(int operator) {
     return true;
   }
 	
-
-  fprintf(stderr, "handleOperator: Undefined Behaviour");
+  exit(1);
+  fprintf(stderr, "handleOperator: Undefined Behaviour\n");
 return false;
 }
 
@@ -392,7 +392,7 @@ STACK* stackFactory(int size) {
  * @return boolean if the stack is NULL returns false otherwise true
  */
 boolean printIntStack(STACK* stack){
-  if( isInitialized(STACK* stack) != true )
+  if( isInitialized(stack) != true )
     return false;
 
   int top = stack->top; 
@@ -408,7 +408,7 @@ return true;
  * @return boolean if the stack is NULL returns false otherwise true
  */
 boolean printCharStack(STACK* stack){
-  if( isInitialized(STACK* stack) != true )
+  if( isInitialized(stack) != true )
     return false;
 
 
@@ -440,7 +440,7 @@ boolean isInitialized(STACK* stack){
  * @return boolean true for empty, false otherwise
  */
 boolean isEmpty(STACK* stack) {
-  if( isInitialized(STACK* stack) != true )
+  if( isInitialized(stack) != true )
     return false;
 
   if (stack->top == 0)
@@ -456,7 +456,7 @@ return false;
  * @constant MAX defined as macro
  */
 boolean isFull(STACK* stack) {
-  if( isInitialized(STACK* stack) != true )
+  if( isInitialized(stack) != true )
     return false;
 
   if (stack->top == stack->size)
@@ -472,7 +472,7 @@ return false;
  * @return boolean true if the peeking process is successfull, false otherwise
  */
 boolean peek(STACK* stack, int* out) {
-  if( isInitialized(STACK* stack) != true )
+  if( isInitialized(stack) != true )
     return false;
 
   if ( isEmpty(stack) )
@@ -490,7 +490,7 @@ return true;
  * @return boolean true if the pushing process is successfull, false otherwise
  */
 boolean push(STACK* stack, int in) {
-  if( isInitialized(STACK* stack) != true )
+  if( isInitialized(stack) != true )
     return false;
 	
   if (isFull(stack))
@@ -511,7 +511,7 @@ boolean push(STACK* stack, int in) {
  * @return boolean true if the popping process is successfull, false otherwise
  */
 boolean pop(STACK* stack, int* out) {
-  if( isInitialized(STACK* stack) != true )
+  if( isInitialized(stack) != true )
     return false;	
 
   if (isEmpty(stack))
