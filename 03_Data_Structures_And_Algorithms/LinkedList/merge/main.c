@@ -49,34 +49,88 @@ void removeDuplicates(NODE* first);
 void reverse();
 void reverseRecursive();
 
-/**
- * Concatenates two linkedlists, First becomes the result linkedlist
- * @param first Head of the first linkedlist
- * @param second Head of the second linkedlist
- */
-void concat(NODE* first, NODE* second){
 
-  NODE* temp = first;
-  while( temp->next != NULL){
-        temp = temp->next;
+void concat(NODE* first, NODE* second);
+
+NODE* merge(NODE* first, NODE* second){
+  NODE* third = NULL;  // pointer for new linkedList
+  NODE* last = NULL;   // last pointer for third linkedList
+  
+  if( (first->data) < (second->data) ){
+    third = first;
+    last = first;
+    first = first->next; 
+  }else{
+    third = second;
+    last = second;
+    second = second->next;
+  }
+  
+  while( first && second ){
+    if( first->data < second->data ){
+      last->next = first;
+      first = first->next;
+    }else{
+      last->next = second;
+      second = second->next;
+    }
+    last = last->next;
+    last->next = NULL;
+  }
+  // Check is there still elements in first or second linkedList  
+  if( first == NULL && second){
+    while(second){
+        last->next = second;
+        second = second->next;
+        last = last->next;
+        last->next = NULL;
+    }
+  }else if( first && second == NULL){ 
+     while(first){
+        last->next = first;
+        first = first->next;
+        last = last->next;
+        last->next = NULL;
+    }   
   }
 
-  temp->next = second;
-
+return third;
 }
 
 // Unit Test
 int main(){
   
-  int A[] = {10,10,10,10,20,30,30,30,40,50,90,600,600,0,600,600};
-  head = createLinkedList(A, 16);
-  NODE* second = createLinkedList(A, 16);
-  removeDuplicates(head);
-  removeDuplicates(second);
-  concat(head, second);
-  display(head);
-  
+  int A[] = {3,5,7,1,3,6,24};
+  head = createLinkedList(A, 7);
 
+  int B[] = {8,6,4,2,3,5,1};
+  NODE* second = createLinkedList(B, 7);
+
+  printf("Head: ");
+  display(head);
+
+  printf("\nSecond: ");
+  display(second);
+
+  printf("\nMerged: "); 
+  NODE* merged = merge(head, second);
+  display(merged);
+ 
+  printf("\n\n");
+ 
+  int C[] = {1,3,5,7,9,11};
+  int D[] = {0,2,4,6,8,10,12,14};
+  NODE* fifth = createLinkedList(C,6);  
+  NODE* sixth = createLinkedList(D,8);
+
+  printf("Fifth: ");  
+  display(fifth);
+  printf("\nSixth: ");  
+  display(sixth);
+  printf("\nMerged: ");
+  merged = merge(fifth, sixth);
+  display(merged);
+  printf("\n");
 return 0;
 }
 
@@ -463,4 +517,18 @@ void reverseRecursiveCall(NODE* q, NODE* p){
 
 }
 
+/**
+ * Concatenates two linkedlists, First becomes the result linkedlist
+ * @param first Head of the first linkedlist
+ * @param second Head of the second linkedlist
+ */
+void concat(NODE* first, NODE* second){
 
+  NODE* temp = first;
+  while( temp->next != NULL){
+        temp = temp->next;
+  }
+
+  temp->next = second;
+
+}
