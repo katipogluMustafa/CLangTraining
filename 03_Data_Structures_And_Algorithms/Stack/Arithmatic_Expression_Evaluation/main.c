@@ -160,6 +160,14 @@ int calculateExpression(char* in) {
 return INT_MIN;
 }
 
+/**
+ * Takes required action for given operator, 
+    if opening parantheses just puts the operator in to the operator stack
+    else if closing parentheses calls handleOperation() for the operators inside the parantheses in the stack
+    else {+ - * /} then iteratively calls handleOperator() until the operator finds its space inside the operator stack
+ * @param char The operator to take care of
+ * @return boolean if operator succesfully handled returns true otherwise false
+ */
 boolean processOperator(char x) {
   int operator = (int)x;
   int dummy;
@@ -186,6 +194,12 @@ boolean processOperator(char x) {
 return true;
 }
 
+/**
+ * Takes the required process for handling Operator{* - / +}
+ * @param int The operator to take care of
+ * @return boolean if the operation is done returns true if the operation is not yet complete returns false 
+ *   so that in the caller function it needs to be iteratively called. In case of error returns false as well as printing to stderr
+ */
 boolean handleOperator(int operator) {
   int dummy;
   printf("Operator is one of the * - / + so we handleOperator\n");
@@ -194,19 +208,19 @@ boolean handleOperator(int operator) {
     printf("Operator %c (%d) exists at the top of the stack\n", (char)dummy, dummy);
   
       if (dummy == '(') {
-          printf("There exists ( inside stack so we push the new operator %c to the stack", operator);
+        printf("There exists ( inside stack so we push the new operator %c to the stack", operator);
   	push(operatorStack, operator);
         return true;
       }
   
       else if ( isOperator(dummy) && isLowerPrecedence((char)dummy, operator)) { // is dummy has lower precedence then operator
-          printf("%c has lower precedence than %c so we'll push it onto the stack\n", dummy, operator);
+        printf("%c has lower precedence than %c so we'll push it onto the stack\n", dummy, operator);
   	push(operatorStack, operator);
         return true;
       }
   
       else {
-          printf("At the top of the stack there is no ( and there is no operator lower precedence then %c so we handleOperation\n", operator);
+        printf("At the top of the stack there is no ( and there is no operator lower precedence then %c so we handleOperation\n", operator);
   	// we just handle operation don't push the operator
   	handleOperation();
         return false;                            
