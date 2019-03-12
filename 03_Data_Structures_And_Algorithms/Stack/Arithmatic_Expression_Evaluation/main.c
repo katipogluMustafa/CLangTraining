@@ -335,6 +335,11 @@ boolean isOperator(char x) {
   }
 }
 
+/**
+ * Checks the given character is empty or not
+ * @param char The char value to check
+ * @return boolean True if one of {'\n' '\r' '\t' '\b' or ' '} else false
+ */
 boolean isEmptyChar(char x) {
   switch (x) {
     case ' ':
@@ -348,7 +353,11 @@ boolean isEmptyChar(char x) {
   }
 }
 
-
+/**
+ * Check whether given char corresponds to a char or not
+ * @param char The given char to check
+ * @return boolean if corresponds to a number returns true else false
+ */
 boolean isNumber(char x) {
   if (x > '9' || x < '0')
     return false;
