@@ -22,6 +22,7 @@ boolean pop(STACK* stack, int* out);
 boolean push(STACK* stack, int in);
 boolean isFull(STACK* stack);
 boolean isEmpty(STACK* stack);
+boolean isInitialized(STACK* stack);
 
 // Arithmatic Expression Evaluation Functions
 boolean isOperator(char x);
@@ -44,28 +45,34 @@ STACK* operandStack;
 STACK* operatorStack;
 
 int main() {
-	/* Initialize global stacks */
-	operandStack = stackFactory(100);
-	if (operandStack == NULL)
-		return 1;
-	operatorStack = stackFactory(100);
-	if (operatorStack == NULL)
-		return 1;
 
-	/* Take Mathematical Expression to Parse*/
-	char s[SIZE];
-	printf("Matematiksel islem:\n");
-	scanf("%[^\n]", s);
-	printf("\nAlgılanan islem: %s\n", s);
-	int out = calculateExpression(s);
+  /* Initialize global stacks */
 
-	/* If calculation returns INT_MIN this means there exists an error */
-	if (out != INT_MIN)
-		printf("Sonuc: %d\n", out);
-	else
-		printf("\nSyntax Error...\n");
+  operandStack = stackFactory(100);
+  if (operandStack == NULL)
+    return 1;
 
-	return 0;
+  operatorStack = stackFactory(100);
+  if (operatorStack == NULL)
+    return 1;
+  
+  /* Take Mathematical Expression to Parse*/
+
+  char s[SIZE];
+
+  printf("Matematiksel islem:\n");
+  scanf("%[^\n]", s);
+
+  printf("\nAlgılanan islem: %s\n", s);
+  int out = calculateExpression(s);
+  
+  /* If calculation returns INT_MIN this means there exists an error */
+  if (out != INT_MIN)
+    printf("Sonuc: %d\n", out);
+  else
+    printf("\nSyntax Error...\n");
+  
+return 0;
 }
 
 
@@ -75,143 +82,146 @@ int main() {
  * @return int  The result of the arithmatic expression, if error returns INT_MIN
  */
 int calculateExpression(char* in) {
-	char* temp = malloc( (strlen(in) + 1) * sizeof(char));
-	strcpy(temp, in);
-        printf("Temp = %s\n",temp);
-	int n = 0; int out;
-	boolean takingNumber = false;
+  char* temp = malloc( (strlen(in) + 1) * sizeof(char));
+  strcpy(temp, in);
+  printf("Temp = %s\n",temp);
+  int n = 0; int out;
+  boolean takingNumber = false;
 
-	while ( true ) {
-		if (takingNumber == false)
-			n = 0;
+  while ( true ) {
+      if (takingNumber == false)
+	n = 0;
 
-		// Take number if not operator and is a number
-		if (!isOperator(*temp) && isNumber(*temp)) {
-			n *= 10;
-			n += (*temp - '0');
-			takingNumber = true;
-                        printf("Taking number... Current n : %d\n", n);
-		}
-                else  if (*temp == '\0') {
+      // Take number if not operator and is a number
+      if (!isOperator(*temp) && isNumber(*temp)) {
+	n *= 10;
+	n += (*temp - '0');
+	takingNumber = true;
+        printf("Taking number... Current n : %d\n", n);
+      }
+      // Have we reached to the end of the given expression ? 
+      else  if (*temp == '\0') {
+          // If we were taking number in the last iteration, push the number you got the stack
+          if (takingNumber == true) {
+		push(operandStack, n);
+		takingNumber = false;
+	  }    
 
-                   if (takingNumber == true) {
-			// if found operator when taking number, then we finished getting number
-			push(operandStack, n);
-			takingNumber = false;
-		   }    
-                   printf("Temp is NULL ending procedure is started...\n");
-      		   // We found the result, return the result after handling all the things left on the stack
-		   while (isEmpty(operatorStack) != true)
-			  if (handleOperation() != true) {
-				fprintf(stderr, "NULL Char: Operator handling Error\n");
-				return INT_MIN;                    // error while handling operation
-			  }
-		
-		   // if Stacks are not empty after we popped result, then there is error
-		   if ( pop(operandStack, &out) && isEmpty(operandStack) )
-			return out;
-	 	   else{
-                        fprintf(stderr, "Operand stack is not Empty while exiting\n");
-			return INT_MIN;
-                   }
+          printf("Temp is NULL ending procedure is started...\n");
+	  // We found the result, return the result after handling all the things left on the stack
+	  while (isEmpty(operatorStack) != true)
+              if (handleOperation() != true) {
+		fprintf(stderr, "NULL Char: Operator handling Error\n");
+		return INT_MIN;                    // error while handling operation
+              }
+	
+	   // if Stacks are not empty after we popped result, then there is error
+	  if ( pop(operandStack, &out) && isEmpty(operandStack) )
+	    return out;
+ 	  else{
+            fprintf(stderr, "Operand stack is not Empty while exiting\n");
+            return INT_MIN;
+           }
+      } 
+      else {
+	  if (isOperator(*temp) == true) {
+	    if (takingNumber == true) {
+              printf("We were taking number, lets push it\n");
+	      // if found operator when taking number, then we finished getting number
+	      push(operandStack, n);
+	      takingNumber = false;
+	    }
+            printf("Lets Process the operator\n");
+	    // Now we process the operator
+            printf("Processing the operator %c \n", *temp);
 
-	         } 
-		else {
-        
-			if (isOperator(*temp) == true) {
-				if (takingNumber == true) {
-                                        printf("We were taking number, lets push it\n");
-					// if found operator when taking number, then we finished getting number
-					push(operandStack, n);
-					takingNumber = false;
-				}
-                                printf("Lets Process the operator\n");
-				// Now we process the operator
-                                printf("Processing the operator %c \n", *temp);
-				if (processOperator(*temp) == false)
-				    return INT_MIN;      // if error, return INT_MIN, else continue        
+	    if (processOperator(*temp) == false)
+              return INT_MIN;      // if error, return INT_MIN, else continue        
 
-			}
-			// if not operator after taking number, not empty char then it is wrong input or wrong syntax
-			else if (isEmptyChar(*temp) == false)
-				return INT_MIN;
+	  }
+	  // if not operator after taking number, not empty char then it is wrong input or wrong syntax
+	  else if (isEmptyChar(*temp) == false)
+	    return INT_MIN;
+      }
 
-		}
-          if(takingNumber == false){
-            printf("Current Operator Stack: ");
-            printCharStack(operatorStack);
-            printf("\n");
-            printf("Current Operand Stack: ");
-            printIntStack(operandStack);
-            printf("\n");
-  	  }               
-          printf("incrementing temp...\n");
-          temp++;
-	}
+      if(takingNumber == false){
+        printf("Current Operator Stack: ");
+        printCharStack(operatorStack);
+        printf("\n");
+        printf("Current Operand Stack: ");
+        printIntStack(operandStack);
+        printf("\n");
+      } 
+              
+      printf("incrementing temp...\n");
+  temp++;
+  }
 
-
-
-	return INT_MIN;
+return INT_MIN;
 }
 
 boolean processOperator(char x) {
-	int operator = (int)x;
-	int dummy;
+  int operator = (int)x;
+  int dummy;
 
-	if (operator == '(') {										           // if opening parentheses
-		push(operatorStack, operator);
-	}
-	else if (operator == ')') {									           // if closing parentheses
+  if (operator == '(')										           // if opening parentheses
+    push(operatorStack, operator);
+   
+  else if (operator == ')') {									           // if closing parentheses
 
-		while ( peek(operatorStack, &dummy) && dummy != '(')	                                           // While operator exists, handle operations
-			if (handleOperation() != true)						                   // handles one operator from the stack
-				return false;                                                                      // error while handling operation
+      while ( peek(operatorStack, &dummy) && dummy != '(')	                                           // While operator exists, handle operations
+	  if (handleOperation() != true)						                   // handles one operator from the stack
+	    return false;                                                                                  // error while handling operation
 		
-		if (dummy == '(')
-			pop(operatorStack, &dummy);							           // throw opening parentheses away
-		else											           // this means stack is empty we can't peek
-			return false;                                                                              // snytax error, no '(' found before ')'
+      if (dummy == '(')
+	pop(operatorStack, &dummy);							                   // throw opening parentheses away
+      else											           // this means stack is empty we can't peek
+	return false;                                                                                      // snytax error, no '(' found before ')'
 
-	}else {													   // if operator like + - * /
-		while ( !handleOperator(operator) );
-		// loop through until we found place for operator in the stack
-	}
+  }else													   // if operator like + - * /
+      while ( !handleOperator(operator) );
+      // loop through until we found place for operator in the stack
 
-	return true;
+
+return true;
 }
 
 boolean handleOperator(int operator) {
-	int dummy;
-        printf("Operator is one of the * - / + so we handleOperator\n");
-	if ( peek(operatorStack, &dummy) ) {
-                printf("Operator %c (%d) exists at the top of the stack\n", (char)dummy, dummy);
-		if (dummy == '(') {
-                        printf("There exists ( inside stack so we push the new operator %c to the stack", operator);
-			push(operatorStack, operator);
-			return true;
-		}
-		else if ( isOperator(dummy) && isLowerPrecedence((char)dummy, operator)) { // is dummy has lower precedence then operator
-                        printf("%c has lower precedence than %c so we'll push it onto the stack\n", dummy, operator);
-			push(operatorStack, operator);
-			return true;
-		}
-		else {
-                        printf("At the top of the stack there is no ( and there is no operator lower precedence then %c so we handleOperation\n", operator);
-			// we just handle operation don't push the operator
-			handleOperation();
-			return false;                            
-		}
+  int dummy;
+  printf("Operator is one of the * - / + so we handleOperator\n");
 
-	}
-	else if( isEmpty(operatorStack) ) {                            // operand stack free, put the operator
-                printf("Operator Stack is empty, lets push the first operator %c to the stack\n", operator);
-		push(operatorStack, operator);
-		return true;
-	}
+  if ( peek(operatorStack, &dummy) ) {
+    printf("Operator %c (%d) exists at the top of the stack\n", (char)dummy, dummy);
+  
+      if (dummy == '(') {
+          printf("There exists ( inside stack so we push the new operator %c to the stack", operator);
+  	push(operatorStack, operator);
+        return true;
+      }
+  
+      else if ( isOperator(dummy) && isLowerPrecedence((char)dummy, operator)) { // is dummy has lower precedence then operator
+          printf("%c has lower precedence than %c so we'll push it onto the stack\n", dummy, operator);
+  	push(operatorStack, operator);
+        return true;
+      }
+  
+      else {
+          printf("At the top of the stack there is no ( and there is no operator lower precedence then %c so we handleOperation\n", operator);
+  	// we just handle operation don't push the operator
+  	handleOperation();
+        return false;                            
+      }
+  
+  }
+  else if( isEmpty(operatorStack) ) {                            // operand stack free, put the operator
+      printf("Operator Stack is empty, lets push the first operator %c to the stack\n", operator);
+      push(operatorStack, operator);
+    return true;
+  }
 	
 
-	fprintf(stderr, "handleOperator: Undefined Behaviour");
-	return false;
+  fprintf(stderr, "handleOperator: Undefined Behaviour");
+return false;
 }
 
 /**
@@ -219,36 +229,36 @@ boolean handleOperator(int operator) {
  * @return if no error while handling then returns true, otherwise returns false
  */
 boolean handleOperation() {
-	int val1, val2;
-	int operator;
-	int result;
+  int val1, val2;
+  int operator;
+  int result;
 
-	if ( pop(operatorStack, &operator) && pop(operandStack, &val2) && pop(operandStack, &val1) ) {
-		switch (operator) {
-		case '-':
-			result = val1 - val2;
-			break;
-		case '+':
-			result = val1 + val2;
-			break;
-		case '*':
-			result = val1 * val2;
-			break;
-		case '/':
-			result = val1 / val2;
-			break;
-		default:
-			fprintf(stderr, " Undefined operator found on the operator stack\n");
-			return false;                 // can't process the operator
-		}
-	}
+  if ( pop(operatorStack, &operator) && pop(operandStack, &val2) && pop(operandStack, &val1) ) {
+    switch (operator) {
+	case '-':
+	  result = val1 - val2;
+	  break;
+	case '+':
+	  result = val1 + val2;
+	  break;
+	case '*':
+	  result = val1 * val2;
+	  break;
+	case '/':
+	  result = val1 / val2;
+	  break;
+	default:
+	  fprintf(stderr, " Undefined operator found on the operator stack\n");
+	  return false;                                                                  // can't process the operator
+    }
+  }
 
-	if (!push(operandStack, result)) {
-		fprintf(stderr, "handleOperation: Pushing Error: Can't push to the stack\n");
-		return false;                    // error while pushing to the stack
-	}
+  if (!push(operandStack, result)) {
+    fprintf(stderr, "handleOperation: Pushing Error: Can't push to the stack\n");
+      return false;                                                            // error while pushing to the stack
+  }
 
-	return true;
+return true;
 }
 
 
@@ -259,12 +269,12 @@ boolean handleOperation() {
  */
 boolean isLowerPrecedence(char x, char y) {
 
-	if ( getPrecedence(x) < getPrecedence(y) ) {
-                printf("%c has lower precedence than %c", x, y);
-		return true;
-	}
-
-	return false;
+  if ( getPrecedence(x) < getPrecedence(y) ) {
+    printf("%c has lower precedence than %c", x, y);
+    return true;
+  }
+ 
+  return false;
 }
 /**
  * Gets the equivalent precedence value
@@ -272,23 +282,23 @@ boolean isLowerPrecedence(char x, char y) {
  * @return int The precedence value of the given operator  
  */
 int getPrecedence(char op) {
-	int precedence;
+  int precedence;
 
-	switch (op) {
-	case '+':
-	case '-':
-		precedence = 1;
-		break;
-	case '*':
-	case '/':
-		precedence = 2;
-		break;
-	default:
-		precedence = 0;
-		break;
-	}
+  switch (op) {
+    case '+':
+    case '-':
+	precedence = 1;
+	break;
+   case '*':
+   case '/':
+	precedence = 2;
+	break;
+   default:
+	precedence = 0;
+	break;
+   }
 
-	return precedence;
+return precedence;
 }
 
 
@@ -298,39 +308,38 @@ int getPrecedence(char op) {
  * @return boolean if operator return true otherwise false
  */
 boolean isOperator(char x) {
-	switch (x) {
-	case '(':
-	case ')':
-	case '+':
-	case '-':
-	case '*':
-	case '/':
-		return true;
-	default:
-		return false;
-	}
+  switch (x) {
+    case '(':
+    case ')':
+    case '+':
+    case '-':
+    case '*':
+    case '/':
+	return true;
+    default:
+	return false;
+  }
 }
 
 boolean isEmptyChar(char x) {
-	switch (x) {
-	case ' ':
-	case '\n':
-	case '\r':
-	case '\t':
-	case '\b':
-		return true;
-	default:
-		return false;
-	}
+  switch (x) {
+    case ' ':
+    case '\n':
+    case '\r':
+    case '\t':
+    case '\b':
+	return true;
+    default:
+	return false;
+  }
 }
 
 
 boolean isNumber(char x) {
+  if (x > '9' || x < '0')
+    return false;
 
-	if (x > '9' || x < '0')
-		return false;
-
-	return true;
+  return true;
 }
 
 /* Stack Functions */ 
@@ -338,7 +347,7 @@ boolean isNumber(char x) {
 
 /**
  * Factory Function for Stack
- * @return STACK* Newly Allocated STACK Address
+ * @return STACK* Newly Allocated Int based STACK Address
  */
 STACK* stackFactory(int size) {
 	STACK* stack = (STACK*)malloc(sizeof(STACK));
@@ -354,9 +363,15 @@ STACK* stackFactory(int size) {
 	return stack;
 }
 
+/**
+ * Prints the given Int based stack without mutating the stack
+ * @param STACK* The stack to print out
+ * @return boolean if the stack is NULL returns false otherwise true
+ */
 boolean printIntStack(STACK* stack){
-  if( stack == NULL)
+  if( isInitialized(STACK* stack) != true )
     return false;
+
   int top = stack->top; 
   while( top != 0)
     printf("%d ", stack->item[--top]);
@@ -364,9 +379,16 @@ boolean printIntStack(STACK* stack){
 return true;
 }
 
+/**
+ * Prints the given Char based stack without mutating the stack
+ * @param STACK* The stack to print out
+ * @return boolean if the stack is NULL returns false otherwise true
+ */
 boolean printCharStack(STACK* stack){
-  if( stack == NULL)
+  if( isInitialized(STACK* stack) != true )
     return false;
+
+
   int top = stack->top; 
   while( top != 0)
     printf("%c ", stack->item[--top]);
@@ -375,6 +397,19 @@ return true;
 }
 
 
+/**
+ * Checks whether given stack is initialized or not
+ * @param STACK* stack to check 
+ * @return true if stack is NULL otherwise false
+ */
+boolean isInitialized(STACK* stack){
+  if( stack != NULL )
+    return false;
+  
+  fprintf(stderr, "Uninitialized Stack Error: Encountered NULL Stack Can't Continue\n");
+
+  return true;
+}
 
 /**
  * Check is the given stack empty or not
@@ -382,16 +417,13 @@ return true;
  * @return boolean true for empty, false otherwise
  */
 boolean isEmpty(STACK* stack) {
-	if (stack == NULL) {
-		fprintf(stderr, "isEmpty: given stack is NULL not Empty\n");
-		return false;
-	}
+  if( isInitialized(STACK* stack) != true )
+    return false;
 
-	if (stack->top == 0)
-		return true;
+  if (stack->top == 0)
+    return true;
                 
-
-	return false;
+return false;
 }
 
 /**
@@ -401,15 +433,13 @@ boolean isEmpty(STACK* stack) {
  * @constant MAX defined as macro
  */
 boolean isFull(STACK* stack) {
-	if (stack == NULL) {
-		fprintf(stderr, "isFull: Given stack is NULL not FULL\n");
-		return false;
-	}
-	
-	if (stack->top == stack->size)
-		return true;
+  if( isInitialized(STACK* stack) != true )
+    return false;
 
-	return false;
+  if (stack->top == stack->size)
+    return true;
+
+return false;
 }
 
 /**
@@ -419,20 +449,15 @@ boolean isFull(STACK* stack) {
  * @return boolean true if the peeking process is successfull, false otherwise
  */
 boolean peek(STACK* stack, int* out) {
-	if (stack == NULL) {
-		fprintf(stderr, "peek: Can't peek: The Stack is NULL\n");
-		return false;
-	}
+  if( isInitialized(STACK* stack) != true )
+    return false;
 
-	if ( isEmpty(stack) )
-		return false;
+  if ( isEmpty(stack) )
+    return false;
 
-//	int index = stack->top - 1;
-//	out = (int*)malloc( sizeof(int) );
+  *out = stack->item[stack->top - 1];
 
-	*out = stack->item[stack->top - 1];
-
-	return true;
+return true;
 }
 
 /**
@@ -442,18 +467,16 @@ boolean peek(STACK* stack, int* out) {
  * @return boolean true if the pushing process is successfull, false otherwise
  */
 boolean push(STACK* stack, int in) {
-	if (stack == NULL) {
-		fprintf(stderr, "push: Can't push: The Stack is NULL\n");
-		return false;
-	}
-		
-	if (isFull(stack))
-		return false;
+  if( isInitialized(STACK* stack) != true )
+    return false;
+	
+  if (isFull(stack))
+    return false;
 
-	stack->item[stack->top] = in;
-	stack->top += 1;
+  stack->item[stack->top] = in;
+  stack->top += 1;
         
-        printf("The number %d pushed to stack\n", in);
+  printf("The number %d pushed to stack\n", in);
         
 	return true;
 }
@@ -465,17 +488,15 @@ boolean push(STACK* stack, int in) {
  * @return boolean true if the popping process is successfull, false otherwise
  */
 boolean pop(STACK* stack, int* out) {
-	if (stack == NULL) {
-		fprintf(stderr, "pop: Can't pop: The Stack is NULL\n");
-		return false;
-	}
+  if( isInitialized(STACK* stack) != true )
+    return false;	
 
-	if (isEmpty(stack))
-		return false;
+  if (isEmpty(stack))
+    return false;
 
-	stack->top -= 1;
-	*out = stack->item[stack->top];
-        printf("The number %d popped out of stack\n", *out);
+  stack->top -= 1;
+  *out = stack->item[stack->top];
+  printf("The number %d popped out of stack\n", *out);
 
-	return true;
+  return true;
 }
