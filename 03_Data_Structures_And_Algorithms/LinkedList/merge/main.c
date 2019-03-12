@@ -57,42 +57,32 @@ NODE* merge(NODE* first, NODE* second){
   NODE* last = NULL;   // last pointer for third linkedList
   
   if( (first->data) < (second->data) ){
-    third = first;
-    last = first;
+    third = last = first;
     first = first->next; 
+    last->next = NULL;
   }else{
-    third = second;
-    last = second;
+    third = last = second;
     second = second->next;
+    last->next = NULL;
   }
   
   while( first && second ){
     if( first->data < second->data ){
       last->next = first;
+      last = first;
       first = first->next;
     }else{
       last->next = second;
+      last = second;
       second = second->next;
     }
-    last = last->next;
     last->next = NULL;
   }
   // Check is there still elements in first or second linkedList  
-  if( first == NULL && second){
-    while(second){
-        last->next = second;
-        second = second->next;
-        last = last->next;
-        last->next = NULL;
-    }
-  }else if( first && second == NULL){ 
-     while(first){
-        last->next = first;
-        first = first->next;
-        last = last->next;
-        last->next = NULL;
-    }   
-  }
+  if( first ) 
+    last->next = first;
+  else
+    last->next = second;
 
 return third;
 }
