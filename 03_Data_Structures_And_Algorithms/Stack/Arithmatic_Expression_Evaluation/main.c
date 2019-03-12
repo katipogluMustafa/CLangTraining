@@ -56,7 +56,7 @@ int main() {
   if (operatorStack == NULL)
     return 1;
   
-  /* Take Mathematical Expression to Parse*/
+  /* Take Mathematical Expression to Parse */
 
   char s[SIZE];
 
@@ -82,7 +82,7 @@ return 0;
  * @return int  The result of the arithmatic expression, if error returns INT_MIN
  */
 int calculateExpression(char* in) {
-  char* temp = malloc( (strlen(in) + 1) * sizeof(char));
+  char* temp = malloc( (strlen(in) + 1) * sizeof(char) );
   strcpy(temp, in);
   printf("Temp = %s\n",temp);
   int n = 0; int out;
@@ -93,7 +93,7 @@ int calculateExpression(char* in) {
 	n = 0;
 
       // Take number if not operator and is a number
-      if (!isOperator(*temp) && isNumber(*temp)) {
+      if ( !isOperator(*temp) && isNumber(*temp) ) {
 	n *= 10;
 	n += (*temp - '0');
 	takingNumber = true;
@@ -110,9 +110,9 @@ int calculateExpression(char* in) {
           printf("Temp is NULL ending procedure is started...\n");
 	  // We found the result, return the result after handling all the things left on the stack
 	  while (isEmpty(operatorStack) != true)
-              if (handleOperation() != true) {
+              if (handleOperation() != true) {                          // Handles one operator from the stack
 		fprintf(stderr, "NULL Char: Operator handling Error\n");
-		return INT_MIN;                    // error while handling operation
+		return INT_MIN;                                         // error while handling operation
               }
 	
 	   // if Stacks are not empty after we popped result, then there is error
@@ -423,14 +423,12 @@ return true;
 /**
  * Checks whether given stack is initialized or not
  * @param STACK* stack to check 
- * @return true if stack is NULL otherwise false
+ * @return true if stack is not NULL otherwise false
  */
 boolean isInitialized(STACK* stack){
-  if( stack != NULL )
+  if( stack == NULL )
     return false;
   
-  fprintf(stderr, "Uninitialized Stack Error: Encountered NULL Stack Can't Continue\n");
-
   return true;
 }
 
