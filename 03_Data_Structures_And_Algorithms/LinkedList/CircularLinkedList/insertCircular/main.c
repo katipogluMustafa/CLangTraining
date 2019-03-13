@@ -52,9 +52,13 @@ return counter;
 boolean insertCircular(int index, int value){
   NODE* temp, *iterator = head;
   int i;
-
-  if( index < 0)
+  if( index < 0 )
     return false;
+
+  int len = length(head);
+
+  if( index >= length(head) )
+    index = index % len;
 
   temp = (NODE*)malloc( sizeof(NODE) );
   temp->data = value;
@@ -94,12 +98,7 @@ int main(){
   displayCircular(head);
   printf("\n");
  
-  insertCircular(3,555);
-  insertCircular(3,652);
-  insertCircular(0,123);
-  insertCircular(2,41);
-  insertCircular(8,20);
-
+  insertCircular(16,10000);
   len = length(head); 
   printf("\nLength of the Circular LinkedList: %d \n", len);
   displayCircular(head);
