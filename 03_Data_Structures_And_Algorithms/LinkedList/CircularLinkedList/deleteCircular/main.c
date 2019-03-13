@@ -37,7 +37,7 @@ int deleteCircular(int index){
   if( index < 0 )
     return -1;
   int len = length(head);
-  if( index >= len )
+  if( index > len )
     index = index % len;
 
   NODE* t = head;
@@ -87,8 +87,14 @@ int main(){
   len = length(head); 
   printf("\nLength of the Circular LinkedList: %d \n", len);
   displayCircular(head);
-  printf("\n");
+  printf("\n\n");
   
+  displayCircular(head);
+  printf("\n");
+  len = length(head); 
+  deleteCircular(len);
+  displayCircular(head);
+  printf("\n");
     
  return 0;
 }
