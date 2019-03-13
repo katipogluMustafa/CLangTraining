@@ -82,6 +82,7 @@ boolean insertCircular(int index, int value){
     iterator->next = temp;
   }
 
+return true;
 }
 
 // Unit Test
