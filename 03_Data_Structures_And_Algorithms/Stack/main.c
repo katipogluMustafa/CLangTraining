@@ -77,11 +77,11 @@ boolean peek(STACK* stack, int* out){
  * @param int* the value you want to push to stack
  * @return boolean true if the pushing process is successfull, false otherwise
  */
-boolean push(STACK* stack, int* in){
+boolean push(STACK* stack, int in){
   if( isFull(stack) )
     return false;
   
-  stack->item[stack->top] = *in;
+  stack->item[stack->top] = in;
   stack->top++;
 
   return true;
