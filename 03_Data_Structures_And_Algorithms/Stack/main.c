@@ -29,7 +29,10 @@ STACK* stackFactory(){
  * @return boolean true for empty, false otherwise
  */
 boolean isEmpty(STACK* stack){
-  if(stack->top)
+  if( stack == NULL )
+    return true;
+
+  if( stack->top != 0)
     return false;
  
   return true;
@@ -42,6 +45,10 @@ boolean isEmpty(STACK* stack){
  * @constant MAX defined as macro
  */
 boolean isFull(STACK* stack){
+
+  if( stack == NULL)
+    return false;
+
   if( stack->top == MAX)
     return true;
  
