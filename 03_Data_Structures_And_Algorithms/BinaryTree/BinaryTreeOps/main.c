@@ -245,7 +245,7 @@ void batchInputIntoTheTree(FILE* file){
     if( lastComma == ',' ) 	// then we have friend input
       do{
         fscanf(file,"%d",&friends[friendCount++]);       
-	}while( ( temp = fgetc(file) ) != '-' && temp != '\n')
+	}while( ( temp = fgetc(file) ) != '-' && temp != '\n' && temp != '\r')		// \r control for windows new line
    
     currentUser = createUser(id); 
     strcpy(currentUser->name,name);
