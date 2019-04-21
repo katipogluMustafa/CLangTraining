@@ -7,9 +7,9 @@
 typedef int boolean;
 
 typedef struct user{
+  int id;
   struct user* left;
   struct user* right;
-  int id;
   int* friends;
   int friendCount;
   char name[100];
@@ -49,19 +49,50 @@ User* insertNewUser(int id){
             temp = temp->left;		// go left
           else{
             temp->left = user; 		// if left is null, put there
-            flag = false;
+            flag = false;		// Exit the loop
           }
         else				// if greater than node's id
           if( temp->right != NULL ) 
             temp = temp->right;		// go right
           else{
             temp->right = user;	 	// if right is null, put there
-            flag = false;
+            flag = false;		// Exit the loop
           }
-      }
     }
+  }
     
   return user; 
+}
+
+// Search for a user in the tree 
+// if found, returns the user
+// if not found returns null
+User* getUser(int id){
+  User* temp = root;
+
+  while( true ){
+    if( temp == NULL )
+      return false; 		// if the node we're at is null then not found return NULL
+    if( temp->id == id ){ 
+      return temp;		// if given id the same as the node's id then we found return the node
+    }
+    else if( temp->id < id)
+      temp = temp->left;	// if given id less go left
+    else
+      temp = temp->right;	// if given id greater go right
+  } 
+}
+
+// if the given id found in the tree prints the name-surname of the user and returns true to the caller
+// if not found, returns false
+boolean contains(int id){ 
+  User* user = getUser(id);	// Search for user with given id
+  if( user == NULL )		// if user is null then the person is not in the tree
+    return false;		// return false to the caller
+
+  // we found user, print it out
+  printf("The tree contains %s %s\n", user->name, user->surname);  
+return true;
 }
 
 User* deleteUser(int id){
@@ -129,33 +160,28 @@ User* deleteUser(int id){
 return NULL;
 }
 
+// Prints @NonNull User
 void printUser(User* user){
-  printf("ID: %d\nName: %s\nSurname: %s\n",user->id, user->name, user->surname);  
+  printf("ID: %d\nName: %s\nSurname: %s",user->id, user->name, user->surname); 
+  friends(user->id);
 }
 
-boolean contains(int id){ 
-  User* user = getUser(id);
-  if( user == NULL )
-    return false;
-  
-  printUser(user);  
-return true;
-}
-
-// If friend found prints 
+// If friend found prints the friends of the given id 
 void friends(int id){
   User* user = getUser(id);
   if( user == NULL || user->friends == NULL  || user->friendCount <= 0)
     return;
    
-  int i;
-  User* temp;
-  printf("Friends of the %s ->>>>", user->name);
-  for(i = 0; i < user->friendCount; i++){
-    temp = getUser( user->friends[i] );
-    printUser( temp ); 
+  User* currentFriend;
+  int friendId;
+  printf(" Friends Of %s:\n", user->id);
+  for(int i = 0; i < friendCount;i++ ){
+    friendId = user->friends[i];					// get next friend id from the user's friends array
+    currentFriend = getUser(friendId);					// search for the user in the tree, we assume we always find the user in the tree
+    printf("---");
+    printf("%s %s\n", currentFriend->name, currentFriend->surname);     // prints @NonNull friend
   }
-  
+
 }
 
 // Size of the Tree
@@ -172,34 +198,19 @@ void printNext(int id){
   if( user == NULL )
     fprintf(stderr,"The id is not found at the tree, we can not print its descendants...\n");
   else{
-    printInOrder(user->left);
-    printInOrder(user->right);
+    printInOrder(user->left);	// Since left subtree less than the node, first print that part
+    printInOrder(user->right);  // now print the other part so that overall output is in sorted order.
   }
 }
 
-User* getUser(int id){
-  User* temp = root;
 
-  while( true ){
-    if( temp == NULL )
-      return false; 		// if the node we're at is null then not found return NULL
-    if( temp->id == id ){ 
-      return temp;		// if given id the same as the node's id then we found return the node
-    }
-    else if( temp->id < id)
-      temp = temp->left;	// if given id less go left
-    else
-      temp = temp->right;	// if given id greater go right
-  } 
-}
-
-// Print 
+// Print the users that has greater id than the input id 
 void printGreater(int id){
   User* temp = root;
   while( true ){
     if( temp == NULL )
       return;
-    else if( temp->id > id){
+    else if( temp->id >= id){
       temp = temp->left;
       printInOrder(temp->right);
     }else if( temp->id < id)
@@ -208,12 +219,12 @@ void printGreater(int id){
 }
 
 
-// Print the users' id-name-surname in increasing sorted order in the whole tree
+// Print the id-name-surname in increasing sorted order in the given tree
 void printInOrder(User* head){
   if( head == NULL )
 	return;
   printInOrder(head->left);
-  printf("ID: %d\nName: %s\nSurname: %s\n",head->id, head->name, head->surname); 
+  printf("ID: %d Name: %s Surname: %s\n",head->id, head->name, head->surname); 
   printInOrder(head->right);
 }
 
@@ -229,6 +240,8 @@ void printChoices(){
   printf("0 For Exit\n");  
 }
 
+
+
 int main(){
   int in,id;
   printf("*** Binary Operations ***\n");
@@ -238,10 +251,9 @@ int main(){
     printf("\nWhich operation do you want to perform : ");
     scanf("%d",&in);
     switch(in){
-      case 0:
-	break;
-      case 1:
-	// insertNewUser
+      case 0:								// Exit
+	break;	
+      case 1:								// insertNewUser
 		printf("\nWhat is the ID of the new user? : ");
 		scanf("%d",&id);
 	 	User* user = insertNewUser(id);
@@ -251,56 +263,49 @@ int main(){
 		  printf("\nWhat is the name the surname? : ");
 		  scanf("%s",user->surname);
 		}else
-		  fprintf(stderr,"User Already Found in the Tree\n");
+		  fprintf(stderr,"\nUser Already Found in the Tree");
 	break;
-      case 2:
-	// deleteUser
+      case 2:								// deleteUser
 		printf("\nWhat is the ID of the user that you want to delete: ");
 		scanf("%d", &id);
 	 	User* deletedUser = deleteUser(id); 	
 		if( deletedUser == NULL)
-		  fprintf(stderr,"\nUnsuccessful deletion : User does not exists!\n");
+		  fprintf(stderr,"\nUnsuccessful deletion : User does not exists!");
 		else
-		  printf("\n%s %s successfully deleted\n", deletedUser->name, deletedUser->surname);
+		  printf("\n%s %s successfully deleted", deletedUser->name, deletedUser->surname);
 	break;
-      case 3:
-	// contains
-		printf("\n What is the ID: ");
+      case 3:								// contains
+		printf("\nWhat is the ID: ");
 		scanf("%d", &id);
 	 	if( contains(id) == false )
-		  printf("\nThe tree does not contain the id %d\n", id);	
+		  printf("\nThe tree does not contain the id %d", id);	
 	break;
 
-      case 4:
-	// friends
+      case 4:								// friends
 		printf("\n What is the ID: ");
 		scanf("%d", &id);
-		// print friends
+		friends(id);
 	break;
 
-      case 5:
-	// size
+      case 5:								// size
 		if( root != NULL )
-		  printf("Size of the Tree is %d\n", size(root) );
+		  printf("\nSize of the Tree is %d", size(root) );
 		else
-		  printf("Size is 0\n");
+		  printf("\nSize is 0\n");
 	break;
 
-      case 6:
-	// printNext
-		printf("\n What is the ID: ");
+      case 6:								// printNext
+		printf("\nWhat is the ID: ");
 		scanf("%d", &id);
 		printNext(id);
 	break;
 
-      case 7:
-	// printGreater
-		printf("\n What is the ID: ");
+      case 7:								// printGreater
+		printf("\nWhat is the ID: ");
 		scanf("%d", &id);
 		printGreater(id);	
 	break;
-      case 8:
-	// printInOrder
+      case 8:								// printInOrder
 	printInOrder(root);
 	break;
       default:
