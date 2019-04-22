@@ -136,12 +136,25 @@ boolean deleteUser(int id){
       else{ 				// id matched with current node, the user to be deleted is found 
         userParent = tempParent;		
         user = temp;			// user represents the node that we need to delete	
+
         if(user->left == NULL){		// if only right child exists or no child exists
-          user = user->right;		// make the user points to its right child
-  	  free(temp);			// delete the right child, temp currently points to the user to be deleted
+
+          // make the user points to its right child
+	  if( userParent->left == user )  
+  	    userParent->left = user->right;	
+  	  else if( userParent->right == user)
+  	    userParent->right = user->right;	
+  	  free(user);			// delete the right child, temp currently points to the user to be deleted
+
         }else if( user->right == NULL){ // if left child only exists or no child exists
-  	  user = user->left;		// make the user points to its left child
+
+          // make the user points to its left child
+	  if( userParent->left == user )  
+  	    userParent->left = user->left;	
+  	  else if( userParent->right == user)
+  	    userParent->right = user->left;	
   	  free(temp);			// delete the left child, temp currently points to the user to be deleted
+
         }else{				// if both childs exists, we need to find inorder successor and put into the place that we want to delete
   					// Okay, hold on, we're gonna find inorder successor
   	  temp = user->right;		// First go right
