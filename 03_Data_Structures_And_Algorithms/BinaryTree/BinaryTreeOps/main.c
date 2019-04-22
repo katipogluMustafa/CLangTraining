@@ -18,7 +18,6 @@ typedef struct user{
 
 User* root; 		// Root of the tree
 
-
 User* createUser(int id){
   User* user = (User*) malloc(sizeof(User));
  
@@ -26,8 +25,8 @@ User* createUser(int id){
   user->right = NULL;
   user->id = id;
   user->friendCount = -1;		// Shows friends arrays is not initialized yet
-  strcpy(user->name,"Undefined");
-  strcpy(user->surname,"Undefined");
+//  strcpy(user->name,"Undefined");
+//  strcpy(user->surname,"Undefined");
 
 return user;
 }
@@ -61,6 +60,15 @@ User* insertNewUser(int id){
   }
     
   return user; 
+}
+
+// Print the id-name-surname in increasing sorted order in the given tree
+void printInOrder(User* head){
+  if( head == NULL )
+	return;
+  printInOrder(head->left);
+  printf("ID: %d Name: %s Surname: %s\n",head->id, head->name, head->surname); 
+  printInOrder(head->right);
 }
 
 // Search for a user in the tree 
@@ -98,7 +106,7 @@ return true;
 // otherwise returns false to the caller
 boolean deleteUser(int id){
   if(root == NULL)
-    return NULL;
+    return false;
   User *temp = root;		// Iterator
   User *tempParent = root;	// When iterating, parent will be stored
   User *user;			// Found user will be stored
@@ -160,12 +168,6 @@ boolean deleteUser(int id){
     } 
 }
 
-// Prints @NonNull User
-void printUser(User* user){
-  printf("ID: %d\nName: %s\nSurname: %s",user->id, user->name, user->surname); 
-  friends(user->id);
-}
-
 // If friend found prints the friends of the given id 
 void friends(int id){
   User* user = getUser(id);
@@ -174,7 +176,8 @@ void friends(int id){
    
   User* currentFriend;
   int friendId;
-  printf(" Friends Of %s:\n", user->id);
+  int friendCount = user->friendCount;
+  printf(" Friends Of %s:\n", user->name);
   for(int i = 0; i < friendCount;i++ ){
     friendId = user->friends[i];					// get next friend id from the user's friends array
     currentFriend = getUser(friendId);					// search for the user in the tree, we assume we always find the user in the tree
@@ -182,6 +185,12 @@ void friends(int id){
     printf("%s %s\n", currentFriend->name, currentFriend->surname);     // prints @NonNull friend
   }
 
+}
+
+// Prints @NonNull User
+void printUser(User* user){
+  printf("ID: %d\nName: %s\nSurname: %s",user->id, user->name, user->surname); 
+  friends(user->id);
 }
 
 // Size of the Tree
@@ -219,24 +228,16 @@ void printGreater(int id){
 }
 
 
-// Print the id-name-surname in increasing sorted order in the given tree
-void printInOrder(User* head){
-  if( head == NULL )
-	return;
-  printInOrder(head->left);
-  printf("ID: %d Name: %s Surname: %s\n",head->id, head->name, head->surname); 
-  printInOrder(head->right);
-}
 
 void batchInputIntoTheTree(FILE* file){
-  int id;
+  User* currentUser;		// Current user to be stored in the Tree
+  int id;		
   char name[100];		// max 100 char name
   char surname[100];		// max 100 char surname
   char lastComma;		// for controlling friend input
   int friends[100];		// store input friend ids
-  int friendCount = 0;
+  int friendCount = 0;		// Number of friends that we've taken for the current user
   char temp;			// stores current character read from fgetc
-  User* currentUser;		// Current user to be stored in the Tree
   while( !feof(file) ){
     // Get The User Details
  
@@ -245,15 +246,14 @@ void batchInputIntoTheTree(FILE* file){
     if( lastComma == ',' ) 	// then we have friend input
       do{
         fscanf(file,"%d",&friends[friendCount++]);       
-	}while( ( temp = fgetc(file) ) != '-' && temp != '\n' && temp != '\r')		// \r control for windows new line
+	}while( ( temp = fgetc(file) ) != '-' && temp != '\n' && temp != '\r');		// \r control for windows new line
    
-    currentUser = createUser(id); 
-    strcpy(currentUser->name,name);
-    strcpy(currentUser->surname, surname);
-    currentUser->friendCount = friendCount;
+    currentUser = insertNewUser(id);		// insert new user into its sorted place with given id 
+    strcpy(currentUser->name,name);		// fill name
+    strcpy(currentUser->surname, surname);	// surname
+    currentUser->friendCount = friendCount;	// and friendCount fields
     for(int i = 0; i < friendCount; i++)
-      currentUser->friends[i] = friends[i];
-    insertNewUser(currentUser);   
+      currentUser->friends[i] = friends[i];	// Copy each friend id into current user's friends field
   }
 
 }
@@ -279,7 +279,7 @@ int main(){
   if( file == NULL)
     fprintf(stderr,"\nInput.txt couldn't open");
   else
-    batchInputIntoTheTree(file);
+//    batchInputIntoTheTree(file);
    
   printf("*** Binary Operations ***\n");
   do{
@@ -304,11 +304,8 @@ int main(){
       case 2:								// deleteUser
 		printf("\nWhat is the ID of the user that you want to delete: ");
 		scanf("%d", &id);
-	 	User* deletedUser = deleteUser(id); 	
-		if( deletedUser == NULL)
+		if( !deleteUser(id) )
 		  fprintf(stderr,"\nUnsuccessful deletion : User does not exists!");
-		else
-		  printf("\n%s %s successfully deleted", deletedUser->name, deletedUser->surname);
 	break;
       case 3:								// contains
 		printf("\nWhat is the ID: ");
