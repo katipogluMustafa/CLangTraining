@@ -119,17 +119,17 @@ boolean deleteUser(int id){
   }
   else				// If the root is not what we're looking for, continue searching
     while( true){		// Iterate forever, we'll exit the function when we delete the element
-      if( temp->id < id )	// If id less then the node
+      if( temp->id > id )	// If id less then the node
   	if(temp->left == NULL)  // Check whether it exists or not 
-            return false;	// if it does not exists, then we shall exit the function since we couldn't found 
-          else{			// if left subtree exists
+          return false;		// if it does not exists, then we shall exit the function since we couldn't found 
+        else{			// if left subtree exists
   	  tempParent = temp;	
   	  temp = temp->left;	// go left
   	}
-      else if(temp->id > id)    // if id greater than the node
+      else if(temp->id < id)    // if id greater than the node
   	if(temp->right == NULL) // control left subtree
-            return false;	// if it does not exists, exit since not found
-          else{			// If right subtree exists
+          return false;	// if it does not exists, exit since not found
+        else{			// If right subtree exists
   	  tempParent = temp;   
   	  temp = temp->right;   // go right
   	}
@@ -368,7 +368,7 @@ int main(){
 
       case 5:								// size
 		if( root != NULL )
-		  printf("\nSize of the Tree is %d", size(root) );
+		  printf("\nSize of the Tree is %d\n", size(root) );
 		else
 		  printf("\nSize is 0\n");
 	break;
