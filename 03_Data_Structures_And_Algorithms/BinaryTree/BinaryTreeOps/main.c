@@ -67,7 +67,7 @@ void printInOrder(User* head){
   if( head == NULL )
 	return;
   printInOrder(head->left);
-  printf("ID: %d Name: %s Surname: %s\n",head->id, head->name, head->surname); 
+  printf("%d - %s %s\n",head->id, head->name, head->surname); 
   printInOrder(head->right);
 }
 
@@ -178,8 +178,9 @@ void friends(int id){
   User* currentFriend;
   int friendId;
   int friendCount = user->friendCount;
+  int i;
   printf(" Friends Of %s:\n", user->name);
-  for(int i = 0; i < friendCount;i++ ){
+  for(i = 0; i < friendCount;i++ ){
     friendId = user->friends[i];					// get next friend id from the user's friends array
     currentFriend = getUser(friendId);					// search for the user in the tree, we assume we always find the user in the tree
     printf("---");
@@ -210,6 +211,7 @@ void printNext(int id){
     printInOrder(user->left);	// Since left subtree less than the node, first print that part
     printInOrder(user->right);  // now print the other part so that overall output is in sorted order.
   }
+
 }
 
 
@@ -219,16 +221,18 @@ void printGreater(int id){
   while( true ){
     if( temp == NULL )
       return;
-    else if( temp->id >= id){
-      temp = temp->left;
+    else if( temp->id > id){
+      printf("%d - %s %s\n",temp->id, temp->name, temp->surname); 
       printInOrder(temp->right);
-    }else if( temp->id < id)
+      temp = temp->left;
+    }else if( temp->id <= id)
       temp = temp->right;
   }
 }
 
 
 void fileInput(FILE* file){
+  User* currentUser;
   char buffer[200];
   int id;
   char name[100];
@@ -254,14 +258,17 @@ void fileInput(FILE* file){
     friendsCount = 0;
     if( temp == ',')
       while( fscanf(file, "%d", &user_friends[friendsCount++] ) != EOF  && (temp = fgetc(file)) == '-' );
-    
-    printf("User Info -->> %d %s %s",id,name,surname);
-    for(i = 0; i < friendsCount;i++)
-      printf("%d ",user_friends[i] );
-    printf("\n");
+    fscanf(file,"\n");								// Read line feed 
+
+    currentUser = insertNewUser(id);		// insert new user into its sorted place with given id 
+    strcpy(currentUser->name,name);		// fill name
+    strcpy(currentUser->surname, surname);	// surname
+    currentUser->friendCount = friendsCount;	// and friendCount fields
+    for(int i = 0; i < friendsCount; i++)
+      currentUser->friends[i] = user_friends[i];	// Copy each friend id into current user's friends field
+//    friends(currentUser->id);
+ 
   }
-  printf("End of Function");
-  fclose(file);
 }
 
 
@@ -318,6 +325,7 @@ int main(){
     fprintf(stderr,"\nInput.txt couldn't open");
   else
     batchInputIntoTheTree(file);
+  fclose(file);
    
   printf("*** Binary Operations ***\n");
   do{
