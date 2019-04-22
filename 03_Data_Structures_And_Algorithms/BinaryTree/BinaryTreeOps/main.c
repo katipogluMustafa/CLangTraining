@@ -25,8 +25,8 @@ User* createUser(int id){
   user->right = NULL;
   user->id = id;
   user->friendCount = -1;		// Shows friends arrays is not initialized yet
-//  strcpy(user->name,"Undefined");
-//  strcpy(user->surname,"Undefined");
+  strcpy(user->name,"Undefined");
+  strcpy(user->surname,"Undefined");
 
 return user;
 }
@@ -185,7 +185,6 @@ void friends(int id){
     printf("---");
     printf("%s %s\n", currentFriend->name, currentFriend->surname);     // prints @NonNull friend
   }
-
 }
 
 // Prints @NonNull User
@@ -229,34 +228,72 @@ void printGreater(int id){
 }
 
 
+void fileInput(FILE* file){
+  char buffer[200];
+  int id;
+  char name[100];
+  char surname[100];
+  int user_friends[100];
+  int friendsCount;
+  char temp;
+  int i;
+  while( !feof(file)  ){
+    // Take Id
+    fscanf(file, "%d,", &id);
+    // Take Name
+    i = 0;
+    while(  ( temp = fgetc(file) ) != ' ' && ( name[i++] = temp ) );
+    name[i] = '\0';
+
+    // Take Surname
+    i = 0;
+    while( ( ( temp = fgetc(file) ) != ',' && temp != '\n' ) && ( surname[i++] = temp ) );
+    surname[i] = '\0';
+    
+    // If any friend exists, take them
+    friendsCount = 0;
+    if( temp == ',')
+      while( fscanf(file, "%d", &user_friends[friendsCount++] ) != EOF  && (temp = fgetc(file)) == '-' );
+    
+    printf("User Info -->> %d %s %s",id,name,surname);
+    for(i = 0; i < friendsCount;i++)
+      printf("%d ",user_friends[i] );
+    printf("\n");
+  }
+  printf("End of Function");
+  fclose(file);
+}
+
 
 void batchInputIntoTheTree(FILE* file){
-  User* currentUser;		// Current user to be stored in the Tree
+/*  User* currentUser;		// Current user to be stored in the Tree
   int id;		
   char name[100];		// max 100 char name
+  char* ptr;
   char surname[100];		// max 100 char surname
   char lastComma;		// for controlling friend input
-  int friends[100];		// store input friend ids
+  int friendss[100];		// store input friend ids
   int friendCount = 0;		// Number of friends that we've taken for the current user
   char temp;			// stores current character read from fgetc
-  while( !feof(file) ){
-    // Get The User Details
- 
-    fscanf(file, "%d,%s %s", &id, name,surname);
-    lastComma = fgetc(file);
-    if( lastComma == ',' ) 	// then we have friend input
-      do{
-        fscanf(file,"%d",&friends[friendCount++]);       
+  while( fscanf(file, "%d,%s %[^,\n\r]", &id, name,surname) != EOF){
+    ptr = name;
+    while( ptr )
+    // Get The User Details 
+    printf("ID= %d NAME= %s SURNAME= %s\n",id,name,surname);
+      if( fgetc(file) == ',' ) 	// then we have friend input
+        do{
+          fscanf(file,"%d",&friendss[friendCount++]);       
 	}while( ( temp = fgetc(file) ) != '-' && temp != '\n' && temp != '\r');		// \r control for windows new line
-   
     currentUser = insertNewUser(id);		// insert new user into its sorted place with given id 
 //    strcpy(currentUser->name,name);		// fill name
 //    strcpy(currentUser->surname, surname);	// surname
     currentUser->friendCount = friendCount;	// and friendCount fields
     for(int i = 0; i < friendCount; i++)
-      currentUser->friends[i] = friends[i];	// Copy each friend id into current user's friends field
+      currentUser->friends[i] = friendss[i];	// Copy each friend id into current user's friends field
+//    friends(currentUser->id);
   }
-
+*/
+  fileInput(file);
 }
 
 
