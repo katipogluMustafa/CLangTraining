@@ -77,17 +77,17 @@ void printInOrder(User* head){
 User* getUser(int id){
   User* temp = root;
 
-  while( true ){
-    if( temp == NULL )
-      return false; 		// if the node we're at is null then not found return NULL
-    if( temp->id == id ){ 
-      return temp;		// if given id the same as the node's id then we found return the node
-    }
-    else if( temp->id < id)
-      temp = temp->left;	// if given id less go left
+  while( true ){     
+    if( temp == NULL)
+      return NULL;	 		// if the node we're at is null then not found return NULL
+    if( temp->id == id )
+      return temp; 			// if given id the same as the node's id then we found return the node
+    else if( temp->id > id)
+      temp = temp->left;		// if given id less go left
     else
-      temp = temp->right;	// if given id greater go right
+      temp = temp->right;		// if given id greater go right  
   } 
+
 }
 
 // if the given id found in the tree prints the name-surname of the user and returns true to the caller
