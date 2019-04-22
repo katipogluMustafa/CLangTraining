@@ -113,7 +113,8 @@ boolean deleteUser(int id){
   User *userParent;		// Found user's parent will be stored
 
   if( root->id == id){		// If the root is the one that we want to delete
-   free(root);			
+   free(root);
+   root = NULL;			
    return true;		 	// Deleted successfully
   }
   else				// If the root is not what we're looking for, continue searching
@@ -249,8 +250,8 @@ void batchInputIntoTheTree(FILE* file){
 	}while( ( temp = fgetc(file) ) != '-' && temp != '\n' && temp != '\r');		// \r control for windows new line
    
     currentUser = insertNewUser(id);		// insert new user into its sorted place with given id 
-    strcpy(currentUser->name,name);		// fill name
-    strcpy(currentUser->surname, surname);	// surname
+//    strcpy(currentUser->name,name);		// fill name
+//    strcpy(currentUser->surname, surname);	// surname
     currentUser->friendCount = friendCount;	// and friendCount fields
     for(int i = 0; i < friendCount; i++)
       currentUser->friends[i] = friends[i];	// Copy each friend id into current user's friends field
@@ -260,7 +261,7 @@ void batchInputIntoTheTree(FILE* file){
 
 
 void printChoices(){
-  printf("1) insertNewUser\n");
+  printf("\n1) insertNewUser\n");
   printf("2) deleteUser\n");
   printf("3) contains\n");
   printf("4) friends\n");
@@ -279,7 +280,7 @@ int main(){
   if( file == NULL)
     fprintf(stderr,"\nInput.txt couldn't open");
   else
-//    batchInputIntoTheTree(file);
+    batchInputIntoTheTree(file);
    
   printf("*** Binary Operations ***\n");
   do{
@@ -305,13 +306,13 @@ int main(){
 		printf("\nWhat is the ID of the user that you want to delete: ");
 		scanf("%d", &id);
 		if( !deleteUser(id) )
-		  fprintf(stderr,"\nUnsuccessful deletion : User does not exists!");
+		  fprintf(stderr,"\nUnsuccessful deletion : User does not exists!\n");
 	break;
       case 3:								// contains
 		printf("\nWhat is the ID: ");
 		scanf("%d", &id);
 	 	if( contains(id) == false )
-		  printf("\nThe tree does not contain the id %d", id);	
+		  fprintf(stderr, "\nThe tree does not contain the id %d\n", id);	
 	break;
 
       case 4:								// friends

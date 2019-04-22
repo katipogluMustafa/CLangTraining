@@ -18,7 +18,7 @@
 16,Begum Selam,40-31
 4,Ersin Tutar,9-15-53-60
 25,Vedat Uncu,29-17-49
-23,Emre Veri,3-12-
+23,Emre Veri,3-12
 32,Gozde Yaz,24-38-7-54
 1,Canan yazar,62-46-59
 43,Oguz Okur,16-4
