@@ -98,88 +98,87 @@ boolean contains(int id){
     return false;		// return false to the caller
 
   // we found user, print it out
-  printf("The tree contains %s %s\n", user->name, user->surname);  
+  printf("\nThe tree contains %s %s\n", user->name, user->surname);  
 return true;
 }
 
-// Returns true if the user to be deleted is successfully deleted
-// otherwise returns false to the caller
+User* getInOrderSuccessor(User* user){
+  if(user == NULL)
+    return NULL;
+  User* ptr;
+
+  if(user->right == NULL)
+    if(user->left != NULL){
+      ptr = user->left;
+      user->left = NULL;
+      return ptr;
+    }
+    else
+      return NULL;
+
+  User* ptrParent = user;
+  ptr = user->right;
+  while( ptr->left != NULL){
+    ptrParent = ptr;
+    ptr = ptr->left;
+  }
+ 
+  if( ptrParent->left == ptr)
+    ptrParent->left = NULL;
+  else
+    ptrParent->right = NULL;
+
+return ptr;
+}
+
 boolean deleteUser(int id){
   if(root == NULL)
     return false;
-  User *temp = root;		// Iterator
-  User *tempParent = root;	// When iterating, parent will be stored
-  User *user;			// Found user will be stored
-  User *userParent;		// Found user's parent will be stored
 
-  if( root->id == id){		// If the root is the one that we want to delete
-   free(root);
-   root = NULL;			
-   return true;		 	// Deleted successfully
-  }
-  else				// If the root is not what we're looking for, continue searching
-    while( true){		// Iterate forever, we'll exit the function when we delete the element
-      if( temp->id > id )	// If id less then the node
-  	if(temp->left == NULL)  // Check whether it exists or not 
-          return false;		// if it does not exists, then we shall exit the function since we couldn't found 
-        else{			// if left subtree exists
-  	  tempParent = temp;	
-  	  temp = temp->left;	// go left
-  	}
-      else if(temp->id < id)    // if id greater than the node
-  	if(temp->right == NULL) // control left subtree
-          return false;	// if it does not exists, exit since not found
-        else{			// If right subtree exists
-  	  tempParent = temp;   
-  	  temp = temp->right;   // go right
-  	}
-      else{ 				// id matched with current node, the user to be deleted is found 
-        userParent = tempParent;		
-        user = temp;			// user represents the node that we need to delete	
+User* inOrderSuccessor;  
+User* temp;
+User* tempParent;
 
-        if(user->left == NULL){		// if only right child exists or no child exists
-
-          // make the user points to its right child
-	  if( userParent->left == user )  
-  	    userParent->left = user->right;	
-  	  else if( userParent->right == user)
-  	    userParent->right = user->right;	
-  	  free(user);			// delete the right child, temp currently points to the user to be deleted
-
-        }else if( user->right == NULL){ // if left child only exists or no child exists
-
-          // make the user points to its left child
-	  if( userParent->left == user )  
-  	    userParent->left = user->left;	
-  	  else if( userParent->right == user)
-  	    userParent->right = user->left;	
-  	  free(temp);			// delete the left child, temp currently points to the user to be deleted
-
-        }else{				// if both childs exists, we need to find inorder successor and put into the place that we want to delete
-  					// Okay, hold on, we're gonna find inorder successor
-  	  temp = user->right;		// First go right
-	  tempParent = user->right; 	// and record the place into tempParent
-          while( temp->left != NULL ){  // As long as node's left is not null
-  	    tempParent = temp;
-  	    temp = temp->left;		// go left
-  	  }	 
-	  // we got ot of while loop, so this means we found the last NonNull left(stored inside temp variable)
-  	  tempParent->left = NULL;		// first make the place of the temp variable as NULL, remember tempParent's left is stored in temp variable	
-  	  // Here temp still points to the old children of tempParent
-	  // We'll put this into the place that we want to delete so let's prepare the temp
-  	  temp->left = user->left;		// first make the temp's left as user's left
-  	  temp->right = user->right;		// and temp's right as user's right
-	  // we currently don't exactly know whether $user is left of the $userParent or right of the $userParent 
-  	  if( userParent->left == user )  	// if it is left of its parent 
-  	    userParent->left = temp;		// just put parent's left the temp, the variable the we prepared to put there
-  	  else if( userParent->right == user)	// if it is right of its parent
-  	    userParent->right = temp;		// why not put the temp there ? :)
-  	
-	  free(user);				// Free the user now	
-  	  return true;				// Successfully we deleted
+  if(root->id == id){
+     inOrderSuccessor = getInOrderSuccessor(root);
+     inOrderSuccessor->left = root->left;
+     inOrderSuccessor->right = root->right;
+     temp = root;
+     root = inOrderSuccessor;
+     free(temp);
+    return true;
+  }else{
+    temp = root;
+    while( true ){
+      if( temp == NULL)
+        return false;
+      else if( temp->id > id){
+        tempParent = temp;
+        temp = temp->left;  	
+      }else if( temp->id < id){
+        tempParent = temp;
+        temp = temp->right;
+      }else{
+        inOrderSuccessor = getInOrderSuccessor(temp);
+        if(inOrderSuccessor != NULL){
+	  inOrderSuccessor->left = temp->left;
+          inOrderSuccessor->right = temp->right;
+        } 
+        if( tempParent->left == temp ){
+            tempParent->left = inOrderSuccessor;
+            free(temp);
+        }else{
+	    tempParent->right = inOrderSuccessor;
+            free(temp);
         }
+
+        return true; 
       }
-    } 
+    }
+ 
+  }
+
+return false;
 }
 
 // If friend found prints the friends of the given id 
@@ -279,43 +278,9 @@ void fileInput(FILE* file){
     currentUser->friendCount = friendsCount;	// and friendCount fields
     for(int i = 0; i < friendsCount; i++)
       currentUser->friends[i] = user_friends[i];	// Copy each friend id into current user's friends field
-//    friends(currentUser->id);
  
   }
 }
-
-
-void batchInputIntoTheTree(FILE* file){
-/*  User* currentUser;		// Current user to be stored in the Tree
-  int id;		
-  char name[100];		// max 100 char name
-  char* ptr;
-  char surname[100];		// max 100 char surname
-  char lastComma;		// for controlling friend input
-  int friendss[100];		// store input friend ids
-  int friendCount = 0;		// Number of friends that we've taken for the current user
-  char temp;			// stores current character read from fgetc
-  while( fscanf(file, "%d,%s %[^,\n\r]", &id, name,surname) != EOF){
-    ptr = name;
-    while( ptr )
-    // Get The User Details 
-    printf("ID= %d NAME= %s SURNAME= %s\n",id,name,surname);
-      if( fgetc(file) == ',' ) 	// then we have friend input
-        do{
-          fscanf(file,"%d",&friendss[friendCount++]);       
-	}while( ( temp = fgetc(file) ) != '-' && temp != '\n' && temp != '\r');		// \r control for windows new line
-    currentUser = insertNewUser(id);		// insert new user into its sorted place with given id 
-//    strcpy(currentUser->name,name);		// fill name
-//    strcpy(currentUser->surname, surname);	// surname
-    currentUser->friendCount = friendCount;	// and friendCount fields
-    for(int i = 0; i < friendCount; i++)
-      currentUser->friends[i] = friendss[i];	// Copy each friend id into current user's friends field
-//    friends(currentUser->id);
-  }
-*/
-  fileInput(file);
-}
-
 
 void printChoices(){
   printf("\n1) insertNewUser\n");
@@ -337,7 +302,7 @@ int main(){
   if( file == NULL)
     fprintf(stderr,"\nInput.txt couldn't open");
   else
-    batchInputIntoTheTree(file);
+    fileInput(file);
   fclose(file);
    
   printf("*** Binary Operations ***\n");
@@ -358,7 +323,7 @@ int main(){
 		  printf("\nWhat is the name the surname? : ");
 		  scanf("%s",user->surname);
 		}else
-		  fprintf(stderr,"\nUser Already Found in the Tree");
+		  fprintf(stderr,"\nUser Already Found in the Tree\n");
 	break;
       case 2:								// deleteUser
 		printf("\nWhat is the ID of the user that you want to delete: ");
