@@ -25,15 +25,15 @@ User* createUser(int id){
   user->right = NULL;
   user->id = id;
   user->friendCount = -1;		// Shows friends arrays is not initialized yet
-  strcpy(user->name,"Undefined");
+  strcpy(user->name,"Undefined");	// In case user name-surname not specified, we put Undefined
   strcpy(user->surname,"Undefined");
 
 return user;
 }
 
 User* insertNewUser(int id){
-  User* user =  createUser(id);
-  if( root == NULL )
+  User* user =  createUser(id);		// Create a user with given id by using factory function
+  if( root == NULL )			// If root is null then make the new node as root
     root = user;
   else{
     User* temp = root;
@@ -102,77 +102,85 @@ boolean contains(int id){
 return true;
 }
 
+// Gets the user that we want to replace when deleting a user
+// We break the connection with the user and its parent when returning since we'll put the user anywhere else
+// if find a user to be put in the place returns the user otherwise returns NULL but in both case we'll use the return value in the caller
 User* getInOrderSuccessor(User* user){
-  if(user == NULL)
+  if(user == NULL)		// if user == NULL, then we couldn't find a successor return NULL
     return NULL;
   User* ptr;
 
-  if(user->right == NULL)
-    if(user->left != NULL){
+  if(user->right == NULL)	// if right is NULL then control whether left exists or not
+    if(user->left != NULL){	// if left exists return the left and don't forget to make left's parent's left as NULL
       ptr = user->left;
       user->left = NULL;
       return ptr;
     }
-    else
+    else			// if left doesn't exists, return NULL we couldn't find any successor
       return NULL;
+  else{
+    User* ptrParent = user;	// save user's parent
+    ptr = user->right;		// go right for once
+    while( ptr->left != NULL){  // as long as left is not not, go left
+      ptrParent = ptr;
+      ptr = ptr->left;
+    }
+    // Now we have inorder successor at hand 
+    if( ptrParent->left == ptr)	// check whether ptr left of its parent or right of its parent
+      ptrParent->left = NULL;   // then break the connection between parent and user
+    else
+      ptrParent->right = NULL;
 
-  User* ptrParent = user;
-  ptr = user->right;
-  while( ptr->left != NULL){
-    ptrParent = ptr;
-    ptr = ptr->left;
   }
- 
-  if( ptrParent->left == ptr)
-    ptrParent->left = NULL;
-  else
-    ptrParent->right = NULL;
-
-return ptr;
+return ptr;			// return the user that you find as inorder sucessor
 }
 
+// Delete the user with given id from globally defined tree
+// on Sucess returns true
+// otherwise false
 boolean deleteUser(int id){
   if(root == NULL)
     return false;
 
-User* inOrderSuccessor;  
-User* temp;
-User* tempParent;
+  User* inOrderSuccessor;  
+  User* temp;
+  User* tempParent;
 
-  if(root->id == id){
-     inOrderSuccessor = getInOrderSuccessor(root);
-     inOrderSuccessor->left = root->left;
-     inOrderSuccessor->right = root->right;
-     temp = root;
-     root = inOrderSuccessor;
-     free(temp);
-    return true;
-  }else{
-    temp = root;
-    while( true ){
-      if( temp == NULL)
+  if(root->id == id){					// if the root is he one that we want to delete
+     inOrderSuccessor = getInOrderSuccessor(root);	// get in order sucessor
+     inOrderSuccessor->left = root->left;		// make its left and right as root's left and right
+     inOrderSuccessor->right = root->right;	
+     temp = root;					// save the root into temp so that later we can free it
+     root = inOrderSuccessor;				// update the root as inOrderSucessor
+     free(temp);					// free the old root
+    return true;	
+  }else{					
+    temp = root;				
+    while( true ){					// iterate forever
+      if( temp == NULL)					// if current user is null then we couldn't find the user, return false
         return false;
-      else if( temp->id > id){
-        tempParent = temp;
+      else if( temp->id > id){				// if given id is less then the current node, go left
+        tempParent = temp;				// don't forget to record its parent
         temp = temp->left;  	
-      }else if( temp->id < id){
+      }else if( temp->id < id){				// if greater, go right
         tempParent = temp;
         temp = temp->right;
-      }else{
-        inOrderSuccessor = getInOrderSuccessor(temp);
-        if(inOrderSuccessor != NULL){
+      }else{						// we found the id that we want to delete
+        inOrderSuccessor = getInOrderSuccessor(temp);	// get inOrderSucessor
+        if(inOrderSuccessor != NULL){			// if it is not null then put the old connections of currentNode into inOrderSucessor
 	  inOrderSuccessor->left = temp->left;
           inOrderSuccessor->right = temp->right;
-        } 
+        }
+	// Find out whether temp is left or right child of its parent
         if( tempParent->left == temp ){
-            tempParent->left = inOrderSuccessor;
-            free(temp);
+            tempParent->left = inOrderSuccessor;	// then replace the temp's place with inOrderSucessor
+            free(temp);					// free the the user that you want to delete
         }else{
 	    tempParent->right = inOrderSuccessor;
             free(temp);
         }
 
-        return true; 
+        return true; 					// we deleted successfully, return true
       }
     }
  
@@ -183,16 +191,16 @@ return false;
 
 // If friend found prints the friends of the given id 
 void friends(int id){
-  User* user = getUser(id);
-  if( user == NULL || user->friends == NULL  || user->friendCount <= 0)
+  User* user = getUser(id);						// search and get the user with given id
+  if( user == NULL || user->friends == NULL  || user->friendCount <= 0) // if user doesn't exists or doesn't have friend, just return, nothing to do
     return;
    
-  User* currentFriend;
-  int friendId;
-  int friendCount = user->friendCount;
-  int i;
-  printf(" Friends Of %s:\n", user->name);
-  for(i = 0; i < friendCount;i++ ){
+  User* currentFriend;							// Current friend that we want to print
+  int friendId;								// currentFriend id
+  int friendCount = user->friendCount;					// number of friends of the user that we found
+  int i;								// iterator
+  printf(" Friends Of %s:\n", user->name);				// we're gonna print the user's friends
+  for(i = 0; i < friendCount;i++ ){					// iterate over friends 
     friendId = user->friends[i];					// get next friend id from the user's friends array
     currentFriend = getUser(friendId);					// search for the user in the tree, we assume we always find the user in the tree
     printf("---");
@@ -207,6 +215,7 @@ void printUser(User* user){
 }
 
 // Size of the Tree
+// Returns size of the tree by recursively traversing the tree
 int size(User* temp){
   if( temp == NULL )
     return 0;
@@ -233,27 +242,26 @@ void printGreater(int id){
   while( true ){
     if( temp == NULL )
       return;
-    else if( temp->id > id){
-      printf("%d - %s %s\n",temp->id, temp->name, temp->surname); 
-      printInOrder(temp->right);
-      temp = temp->left;
+    else if( temp->id > id){						// whenever we need to go left
+      printf("%d - %s %s\n",temp->id, temp->name, temp->surname); 	// first print the current user
+      printInOrder(temp->right);					// and its right sub tree
+      temp = temp->left;						// then go left
     }else if( temp->id <= id)
       temp = temp->right;
   }
 }
 
-
+// Takes user input from the given file pointer
 void fileInput(FILE* file){
-  User* currentUser;
-  char buffer[200];
-  int id;
-  char name[100];
-  char surname[100];
-  int user_friends[100];
-  int friendsCount;
-  char temp;
-  int i;
-  while( !feof(file)  ){
+  User* currentUser;				// Current user that we're inserting into the tree
+  int id;					// current user id
+  char name[100];				// current user name
+  char surname[100];				// current user surname
+  int user_friends[100];			// current user friends
+  int friendsCount;				// current user friends count
+  char temp;					// to check transitions from one field to the other, like ',' '-' '\n'
+  int i;					// iterator
+  while( !feof(file)  ){			// While we haven't reach EOF
     // Take Id
     fscanf(file, "%d,", &id);
     // Take Name
@@ -268,17 +276,16 @@ void fileInput(FILE* file){
     
     // If any friend exists, take them
     friendsCount = 0;
-    if( temp == ',')
+    if( temp == ',' )
       while( fscanf(file, "%d", &user_friends[friendsCount++] ) != EOF  && (temp = fgetc(file)) == '-' );
-    fscanf(file,"\n");								// Read line feed 
+    fscanf(file,"\n");	// Read line feed 
 
     currentUser = insertNewUser(id);		// insert new user into its sorted place with given id 
     strcpy(currentUser->name,name);		// fill name
     strcpy(currentUser->surname, surname);	// surname
     currentUser->friendCount = friendsCount;	// and friendCount fields
     for(int i = 0; i < friendsCount; i++)
-      currentUser->friends[i] = user_friends[i];	// Copy each friend id into current user's friends field
- 
+      currentUser->friends[i] = user_friends[i];	// Copy each friend id into current user's friends field 
   }
 }
 
@@ -295,15 +302,16 @@ void printChoices(){
 }
 
 int main(){
-  int in;	// current choice for the menu
-  int id;	// id input from the user
-  root = NULL;
-  FILE* file = fopen("Input.txt", "r");
+  int in;								// current choice for the menu
+  int id;								// id input from the user
+  root = NULL;								// Start as root NULL
+
+  FILE* file = fopen("Input.txt", "r");					
   if( file == NULL)
     fprintf(stderr,"\nInput.txt couldn't open");
   else
-    fileInput(file);
-  fclose(file);
+    fileInput(file);							// Take input from Input.txt
+  fclose(file);								// free the resources of the Input.txt
    
   printf("*** Binary Operations ***\n");
   do{
