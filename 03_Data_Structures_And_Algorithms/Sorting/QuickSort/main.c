@@ -1,5 +1,5 @@
 #include<stdio.h>
-
+#include<stdlib.h>
 
 /**
  * Choses a pivot element then puts every element less than pivot on its left,  greater ones to its right
@@ -16,7 +16,7 @@ int partitionFast(int A[], int low, int high){
   
   // I think if we make j here instead of j-1 there will be error, later check this again
   do{
-    do{i++;}while( i < j-1 && A[i] <= pivot );		// Until you see greater element from the pivot, increment i
+    do{i++;}while( i < j && A[i] <= pivot );		// Until you see greater element from the pivot, increment i
     do{j--;}while( i < j && A[j] > pivot );		// Until you see lesser element from the pivot, decrement j
     // Then A[i]<-->A[j] if i < j
     temp = A[i];	// We could have put this swap into if(i < j) but it would be expensive
@@ -100,10 +100,19 @@ void printArray(int A[], int n){
 
 int main(){
   int A[] = {65,60,55,50,45,40,35};
-  printf("Test Case 1: ");
-  printArray(A,7); 
+//  printf("Test Case 1: ");
+//  printArray(A,7); 
+//  quickSort(A,0,6);
+//  printArray(A,7); 
+
+  int* G = (int*)malloc(7 * sizeof(int)); 
+  for(int i = 0; i < 7; i++)
+    G[i] = A[i];  
+  printf("Test Case 1 With Malloc: ");
+  printArray(A,7);
   quickSort(A,0,6);
-  printArray(A,7); 
+  printArray(A,7);
+
   printf("*********************\n");  
   printf("Test Case 2: ");
   int B[] = {1,4,2,5,3,7,6,8,9,11};
@@ -128,7 +137,6 @@ int main(){
   printArray(E,20);
   quickSort(E,0,19);
   printArray(E,20);
-
-
+  
 return 0;
 }
