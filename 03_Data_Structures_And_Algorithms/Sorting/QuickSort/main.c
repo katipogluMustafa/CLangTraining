@@ -1,6 +1,25 @@
 #include<stdio.h>
 #include<stdlib.h>
 
+int partition(int A[], int low, int high){
+  int j = low, temp,i;
+  int pivot = A[high];	
+
+  for(i = low; i < high; i++)
+    if( A[i] < pivot ){
+      temp = A[i];
+      A[i] = A[j];
+      A[j++] = temp;
+    }
+
+  temp = A[j];
+  A[j] = pivot;
+  A[high] = temp;
+  
+return j;
+}
+
+
 /**
  * Choses a pivot element then puts every element less than pivot on its left,  greater ones to its right
  * Takes An array of elements and the boundary indexes for the element
@@ -84,7 +103,7 @@ void quickSort(int A[], int low, int high){
   int pivotIndex;
   if( low < high ){
 //    pivotIndex = partitionFast(A,low,high);
-    pivotIndex = partitionSlow(A,low,high);
+    pivotIndex = partition(A,low,high);
     quickSort(A,low,pivotIndex-1);
     quickSort(A,pivotIndex+1,high);
   }
@@ -138,5 +157,6 @@ int main(){
   quickSort(E,0,19);
   printArray(E,20);
   
+   
 return 0;
 }
