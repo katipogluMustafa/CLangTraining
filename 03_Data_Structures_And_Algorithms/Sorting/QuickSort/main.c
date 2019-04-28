@@ -13,9 +13,10 @@ int partitionFast(int A[], int low, int high){
   int pivot = A[low];
   int i = low, j = high+1;
   int temp;
-
+  
+  // I think if we make j here instead of j-1 there will be error, later check this again
   do{
-    do{i++;}while( i < j && A[i] <= pivot );		// Until you see greater element from the pivot, increment i
+    do{i++;}while( i < j-1 && A[i] <= pivot );		// Until you see greater element from the pivot, increment i
     do{j--;}while( i < j && A[j] > pivot );		// Until you see lesser element from the pivot, decrement j
     // Then A[i]<-->A[j] if i < j
     temp = A[i];	// We could have put this swap into if(i < j) but it would be expensive
@@ -99,9 +100,34 @@ void printArray(int A[], int n){
 
 int main(){
   int A[] = {65,60,55,50,45,40,35};
+  printf("Test Case 1: ");
   printArray(A,7); 
   quickSort(A,0,6);
   printArray(A,7); 
+  printf("*********************\n");  
+  printf("Test Case 2: ");
+  int B[] = {1,4,2,5,3,7,6,8,9,11};
+  printArray(B,10);
+  quickSort(B,0,9);
+  printArray(B,10);
+  printf("*********************\n");  
+  printf("Test Case 3: ");
+  int C[] = {1,3,5,7,9,11,13,15,17, 21};
+  printArray(C,10);
+  quickSort(C,0,9);
+  printArray(C,10);
+  printf("*********************\n");  
+  printf("Test Case 4: ");
+  int D[] = {4,5,3,7,2};
+  printArray(D,5);
+  quickSort(D,0,4);
+  printArray(D,5);
+  printf("*********************\n");  
+  printf("Test Case 5: ");
+  int E[] = {45, 25, 46, 48, 28, 6, 13, 5, 36, 44, 7, 4, 11, 30, 24, 34, 15, 31, 38, 49};
+  printArray(E,20);
+  quickSort(E,0,19);
+  printArray(E,20);
 
 
 return 0;
