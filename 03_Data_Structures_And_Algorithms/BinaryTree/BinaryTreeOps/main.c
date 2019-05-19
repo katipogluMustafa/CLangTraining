@@ -112,16 +112,16 @@ User* getInOrderSuccessor(User* user){
     
   User* ptrParent = user;	// save user's parent
   ptr = user->right;		// go right for once
-  while( ptr->left != NULL){  // as long as left is not not, go left
+  while( ptr->left != NULL){  // as long as left is not NULL, go left
     ptrParent = ptr;
     ptr = ptr->left;
   }
 
   // Now we have inorder successor at hand 
   if( ptrParent->left == ptr)	// check whether ptr left of its parent or right of its parent
-    ptrParent->left = NULL;   // then break the connection between parent and user
-  else
-    ptrParent->right = NULL;
+    ptrParent->left = NULL;     // then break the connection between parent and user
+  else				
+    ptrParent->right = NULL;    // in case we never go into while loop
 
 return ptr;			// return the user that you find as inorder sucessor
 }
@@ -211,6 +211,40 @@ boolean deleteUser(int id){
 
 return false;
 }
+
+// Delete the user with given id 
+// on Sucess returns new root
+// otherwise returns NULL
+User* deleteUser(User* head, int id){
+  if(head == NULL)
+    return NULL;
+  
+  User* tmp;
+
+  if( head->id < id )
+    head->right = deleteUser(head->right, id);
+  else if( head->id > id )
+    head->left = deleteUser(head->left, id);
+  else{					// it is the user to be deleted
+    if( head->left == NULL){		// only one child or no child
+    	tmp = head->right;
+	free(head);
+    }else if( head->right == NULL){	// again, only one child or no child
+    	tmp = head->left;
+	free(head);
+    }else{				// both childrens exist
+        tmp = getInOrderSuccessor(head);
+	tmp->left = head->left;
+	tmp->right = head->right;
+    	free(head);
+    }
+
+    return tmp;
+  }
+
+return head;
+}
+
 
 // If friend found prints the friends of the given id 
 void friends(int id){
