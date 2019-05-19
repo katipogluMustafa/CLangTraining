@@ -2,11 +2,11 @@
 #include<limits.h>
 
 
-/* downHeap puts the element with given index 'n' into its proper place.
+/* upHeap puts the element with given index 'n' into its proper place.
  * @param A[] is the Max heap tree
  * @param n is the index of the recently added element
  */
-void downHeap(int A[], int n){
+void upHeap(int A[], int n){
   int temp, i;
   temp = A[n];
   i = n;
@@ -80,7 +80,7 @@ void printArray(int* Arr, int n){
  */
 void insertMaxHeap(int A[], int* n, int value){ 
   A[*n] = value;
-  downHeap(A, *n);
+  upHeap(A, *n);
   *n += 1;
 }
 
@@ -96,6 +96,9 @@ void createMaxHeap(int A[], int n){
     insertMaxHeap(A, &i, A[i]);		// i is incremented by insertMaxHeap function  
 }
 
+/**
+ * See Sorting section for faster version
+ */
 void heapSort(int A[], int n){
   int i;
   int size = n;
