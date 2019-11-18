@@ -109,29 +109,20 @@ User* getInOrderSuccessor(User* user){
   if(user == NULL)		// if user == NULL, then we couldn't find a successor return NULL
     return NULL;
   User* ptr;
-
-  if(user->right == NULL)	// if right is NULL then control whether left exists or not
-    if(user->left != NULL){	// if left exists return the left and don't forget to make left's parent's left as NULL
-      ptr = user->left;
-      user->left = NULL;
-      return ptr;
-    }
-    else			// if left doesn't exists, return NULL we couldn't find any successor
-      return NULL;
-  else{
-    User* ptrParent = user;	// save user's parent
-    ptr = user->right;		// go right for once
-    while( ptr->left != NULL){  // as long as left is not not, go left
-      ptrParent = ptr;
-      ptr = ptr->left;
-    }
-    // Now we have inorder successor at hand 
-    if( ptrParent->left == ptr)	// check whether ptr left of its parent or right of its parent
-      ptrParent->left = NULL;   // then break the connection between parent and user
-    else
-      ptrParent->right = NULL;
-
+    
+  User* ptrParent = user;	// save user's parent
+  ptr = user->right;		// go right for once
+  while( ptr->left != NULL){  // as long as left is not NULL, go left
+    ptrParent = ptr;
+    ptr = ptr->left;
   }
+
+  // Now we have inorder successor at hand 
+  if( ptrParent->left == ptr)	// check whether ptr left of its parent or right of its parent
+    ptrParent->left = NULL;     // then break the connection between parent and user
+  else				
+    ptrParent->right = NULL;    // in case we never go into while loop
+
 return ptr;			// return the user that you find as inorder sucessor
 }
 
@@ -143,18 +134,31 @@ boolean deleteUser(int id){
     return false;
 
   User* inOrderSuccessor;  
-  User* temp;
+  User* temp, *temp2;
   User* tempParent;
 
-  if(root->id == id){					// if the root is he one that we want to delete
-     inOrderSuccessor = getInOrderSuccessor(root);	// get in order sucessor
-     inOrderSuccessor->left = root->left;		// make its left and right as root's left and right
-     inOrderSuccessor->right = root->right;	
-     temp = root;					// save the root into temp so that later we can free it
-     root = inOrderSuccessor;				// update the root as inOrderSucessor
-     free(temp);					// free the old root
+  if(root->id == id){					// if the root is the one that we want to delete
+     if( root->left == NULL){				// if left child not exists, make right as root
+       temp = root->right;
+       free(root);
+       root = temp;
+       return true;
+     }else if( root->right == NULL){			// if right child not exists, make left as root
+       temp = root->left;
+       free(root);
+       root = temp;
+       return true;
+     }else{						// if two children exists, then find inOrderSuccessor(smallest element of right subtree)
+       inOrderSuccessor = getInOrderSuccessor(root);	// get in order sucessor
+       inOrderSuccessor->left = root->left;		// make its left and right as root's left and right
+       inOrderSuccessor->right = root->right;	
+       temp = root;					// save the root into temp so that later we can free it
+       root = inOrderSuccessor;				// update the root as inOrderSucessor
+       free(temp);					// free the old root
     return true;	
-  }else{					
+     }
+  }
+  else{							// if the one we want to delete is not the root					
     temp = root;				
     while( true ){					// iterate forever
       if( temp == NULL)					// if current user is null then we couldn't find the user, return false
@@ -166,20 +170,39 @@ boolean deleteUser(int id){
         tempParent = temp;
         temp = temp->right;
       }else{						// we found the id that we want to delete
-        inOrderSuccessor = getInOrderSuccessor(temp);	// get inOrderSucessor
-        if(inOrderSuccessor != NULL){			// if it is not null then put the old connections of currentNode into inOrderSucessor
-	  inOrderSuccessor->left = temp->left;
-          inOrderSuccessor->right = temp->right;
-        }
-	// Find out whether temp is left or right child of its parent
-        if( tempParent->left == temp ){
-            tempParent->left = inOrderSuccessor;	// then replace the temp's place with inOrderSucessor
-            free(temp);					// free the the user that you want to delete
-        }else{
-	    tempParent->right = inOrderSuccessor;
-            free(temp);
-        }
-
+        if( temp->left == NULL){			// if only right child exists or no child exists, then put right child into its place when deleting 
+          temp2 = temp->right;
+	  if( tempParent->left == temp ){
+  	    tempParent->left = temp2;
+    	  }else{
+            tempParent->right = temp2;
+	  }
+          free(temp);
+          return true; 
+        }else if( temp->right == NULL){		  	// if only left child exists or no child exists, then put left child into its place when deleting
+ 	  temp2 = temp->left; 
+	  if( tempParent->left == temp ){
+  	    tempParent->left = temp2;
+    	  }else{
+            tempParent->right = temp2;
+	  }
+          free(temp);
+          return true; 
+        }else{ 						// else find inOrderSucessor and put that into the place that we get after deleting
+          inOrderSuccessor = getInOrderSuccessor(temp);	// get inOrderSucessor
+          if(inOrderSuccessor != NULL){			// if it is not null then put the old connections of currentNode into inOrderSucessor
+            inOrderSuccessor->left = temp->left;
+            inOrderSuccessor->right = temp->right;
+          }
+          // Find out whether temp is left or right child of its parent
+          if( tempParent->left == temp ){
+              tempParent->left = inOrderSuccessor;	// then replace the temp's place with inOrderSucessor
+              free(temp);					// free the the user that you want to delete
+          }else{
+              tempParent->right = inOrderSuccessor;
+              free(temp);
+          }
+	}
         return true; 					// we deleted successfully, return true
       }
     }
@@ -188,6 +211,40 @@ boolean deleteUser(int id){
 
 return false;
 }
+
+// Delete the user with given id 
+// on Sucess returns new root
+// otherwise returns NULL
+User* deleteUser(User* head, int id){
+  if(head == NULL)
+    return NULL;
+  
+  User* tmp;
+
+  if( head->id < id )
+    head->right = deleteUser(head->right, id);
+  else if( head->id > id )
+    head->left = deleteUser(head->left, id);
+  else{					// it is the user to be deleted
+    if( head->left == NULL){		// only one child or no child
+    	tmp = head->right;
+	free(head);
+    }else if( head->right == NULL){	// again, only one child or no child
+    	tmp = head->left;
+	free(head);
+    }else{				// both childrens exist
+        tmp = getInOrderSuccessor(head);
+	tmp->left = head->left;
+	tmp->right = head->right;
+    	free(head);
+    }
+
+    return tmp;
+  }
+
+return head;
+}
+
 
 // If friend found prints the friends of the given id 
 void friends(int id){

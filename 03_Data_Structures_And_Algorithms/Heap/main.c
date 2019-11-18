@@ -1,31 +1,29 @@
 #include<stdio.h>
 #include<limits.h>
 
-/**
- * Inserts given value inside of array of heap tree with n elements, Mutates n since adds new element, Heap has new size
- *@param int HT[] The Array of Heap Tree
- *@param int* n The number of elements inside the Heap tree
- *@param int value The value that we want to insert 
+
+/* upHeap puts the element with given index 'n' into its proper place.
+ * @param A[] is the Max heap tree
+ * @param n is the index of the recently added element
  */
-void insertMaxHeap(int HT[], int* n, int value){
-  int i,parent;
-  i = *n;
-  parent = (i - 1) / 2;
-  HT[*n] = value;
-  *n += 1;
-  while( i >= 1 && value > HT[parent] ){
-    HT[i] = HT[parent];
-    i = parent; 		
-    parent = (i - 1) / 2;
+void upHeap(int A[], int n){
+  int temp, i;
+  temp = A[n];
+  i = n;
+
+  while( i > 0 && temp > A[(i-1)/2]){
+    A[i] = A[(i-1)/2];
+    i = ( i - 1 ) / 2;
   }
-  HT[parent] = value; 		// insert the value
+
+  A[i] = temp;
 }
 
 /**
  * Find biggest child of the given index 'i'
- * @param int i The index that we're looking for biggest childs of it
- * @param int n number of elements inside heap
- * @return int 0 on error, otherwise non-zero index for biggest child
+ * @param i The index that we're looking for biggest childs of it
+ * @param n number of elements inside heap
+ * @return 0 on error, otherwise non-zero index for biggest child
  */
 int findBiggestChild(int HT[], int i, int n){
   int right = 2 * i + 2;
@@ -50,10 +48,11 @@ int findBiggestChild(int HT[], int i, int n){
 int removeMaxHeap(int HT[], int* n){
   if( *n == 0 ) 
     return INT_MIN;
+
   int tmp,max;
   *n -= 1;
   max = HT[0];
-  HT[0] = HT[*n];
+  HT[0] = HT[*n];	
   HT[*n] = max;		// put the deleted element max outside of the maxHeap's range
   int i = 0;
   int adr = findBiggestChild(HT, i, *n);
@@ -75,30 +74,38 @@ void printArray(int* Arr, int n){
 }
 
 /**
+ * @param A[] max heap
+ * @param n number of elements currently heap has
+ * @param value is the value that you want to insert
+ */
+void insertMaxHeap(int A[], int* n, int value){ 
+  A[*n] = value;
+  upHeap(A, *n);
+  *n += 1;
+}
+
+/**
  * Create max heap with array of n elements
- * @param int A[] Array of elements
- * @param int n Number of elements
+ * Works slower than Heapify when it comes to create heap, this one O(nlogn), heapfiy O(n)
+ * @param A[] Array of elements
+ * @param n Number of elements
  */
 void createMaxHeap(int A[], int n){ 		
   int i = 1;
   while( i < n)
-    insertMaxHeap(A,&i,A[i]);		// i is incremented by insertMaxHeap function 
-  
+    insertMaxHeap(A, &i, A[i]);		// i is incremented by insertMaxHeap function  
 }
 
+/**
+ * See Sorting section for faster version
+ */
 void heapSort(int A[], int n){
   int i;
   int size = n;
   createMaxHeap(A,n);
 
-  printArray(A,n); 
-  for(i = 0; i < n-1; i++){ 
-    removeMaxHeap(A,&size ); 
-    printArray(A,n); 
-  }
-
-//  createMaxHeap(A,n);
-//  while( removeMaxHeap(A, &n) != INT_MIN );
+  while(size)
+    removeMaxHeap(A, &size );  
 }
 
 
